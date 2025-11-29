@@ -19,11 +19,11 @@ export class SidebarComponent {
     this.logger = new Logger('SidebarComponent');
 
     // Initialize locators
-    this.drawer = this.page.locator('.MuiDrawer-root.MuiDrawer-anchorLeft.MuiDrawer-docked');
+    this.drawer = this.page.locator('div.MuiDrawer-root.MuiDrawer-anchorLeft.MuiDrawer-docked');
     this.logo = this.drawer.locator('img[src*="svg"]').first();
-    this.menuItems = this.drawer.locator('.MuiListItem-root');
+    this.menuItems = this.drawer.locator('li.MuiListItem-root');
     this.toggleButton = this.drawer.locator('button[type="button"]', { 
-      has: this.page.locator('[data-testid="ChevronRightIcon"]') 
+      has: this.page.getByTestId('ChevronRightIcon') 
     });
   }
 
@@ -221,5 +221,86 @@ export class SidebarComponent {
   async isToggleButtonVisible(): Promise<boolean> {
     this.logger.action('Check if toggle button is visible');
     return await this.toggleButton.isVisible();
+  }
+
+  /**
+   * Validate that each menu item has a visible icon
+   * @returns Object with validation results for each menu item
+   */
+  async validateAllMenuItemIcons(): Promise<{ isValid: boolean; results: Array<{ menuItem: string; hasIcon: boolean }> }> {
+    this.logger.action('Validate all menu item icons');
+    
+    const menuItemNames = await this.getMenuItemNames();
+    const results: Array<{ menuItem: string; hasIcon: boolean }> = [];
+    let allValid = true;
+
+    for (const menuName of menuItemNames) {
+      const hasIcon = await this.isMenuItemIconVisible(menuName);
+      results.push({ menuItem: menuName, hasIcon });
+      
+      if (!hasIcon) {
+        this.logger.error(`Menu item "${menuName}" does not have a visible icon`);
+        allValid = false;
+      }
+    }
+
+    this.logger.info(`Icon validation complete. All valid: ${allValid}`);
+    return { isValid: allValid, results };
+  }
+
+  /**
+   * Get icon source URL for a specific menu item
+   * @param menuText The text of the menu item
+   * @returns The icon src attribute or null if not found
+   */
+  async getMenuItemIconSrc(menuText: string): Promise<string | null> {
+    this.logger.action(`Get icon source for menu item: ${menuText}`);
+    const menuItem = this.drawer.locator('.MuiListItem-root', {
+      has: this.page.locator(`.MuiListItemText-primary:has-text("${menuText}")`)
+    });
+    const icon = menuItem.locator('.MuiListItemIcon-root img');
+    
+    if (await icon.isVisible()) {
+      return await icon.getAttribute('src');
+    }
+    return null;
+  }
+
+  /**
+   * Validate icon presence for a list of expected menu items
+   * @param expectedMenuItems Array of menu item names to validate
+   * @returns Object with validation status and details
+   */
+  async validateMenuItemsWithIcons(expectedMenuItems: string[]): Promise<{ 
+    isValid: boolean; 
+    missingIcons: string[];
+    missingMenuItems: string[];
+  }> {
+    this.logger.action('Validate specific menu items have icons');
+    
+    const missingIcons: string[] = [];
+    const missingMenuItems: string[] = [];
+    const actualMenuItems = await this.getMenuItemNames();
+
+    for (const menuItem of expectedMenuItems) {
+      // Check if menu item exists
+      if (!actualMenuItems.includes(menuItem)) {
+        this.logger.error(`Menu item "${menuItem}" not found in sidebar`);
+        missingMenuItems.push(menuItem);
+        continue;
+      }
+
+      // Check if icon is visible
+      const hasIcon = await this.isMenuItemIconVisible(menuItem);
+      if (!hasIcon) {
+        this.logger.error(`Menu item "${menuItem}" does not have a visible icon`);
+        missingIcons.push(menuItem);
+      }
+    }
+
+    const isValid = missingIcons.length === 0 && missingMenuItems.length === 0;
+    this.logger.info(`Validation complete. Valid: ${isValid}`);
+    
+    return { isValid, missingIcons, missingMenuItems };
   }
 }

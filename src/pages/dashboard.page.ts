@@ -6,8 +6,22 @@ export class DashboardPage extends BasePage {
   private readonly pageTitle: Locator;
   private readonly userProfileMenu: Locator;
   private readonly logoutButton: Locator;
-  private readonly mainContent: Locator;
   private readonly sidebarMenu: Locator;
+  
+  // Dashboard specific locators
+  private readonly organizationActivityHeading: Locator;
+  private readonly slideOverviewHeading: Locator;
+  private readonly stainUsageOverviewHeading: Locator;
+  private readonly quarterDropdown: Locator;
+  private readonly quarterDropdownButton: Locator;
+  private readonly chartArea: Locator;
+  private readonly searchBox: Locator;
+  private readonly overrideButton: Locator;
+  private readonly filterButton: Locator;
+  private readonly filterMenu: Locator;
+  private readonly slidesTable: Locator;
+  private readonly projectsTable: Locator;
+  private readonly progressBar: Locator;
 
   constructor(page: Page) {
     super(page, 'DashboardPage');
@@ -16,8 +30,22 @@ export class DashboardPage extends BasePage {
     this.pageTitle = page.locator('h1, .page-title, [data-testid="page-title"]');
     this.userProfileMenu = page.locator('.user-profile, .profile-menu, [data-testid="user-menu"]');
     this.logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout"), [data-testid="logout"]');
-    this.mainContent = page.locator('main, .main-content, [role="main"]');
     this.sidebarMenu = page.locator('.sidebar, .side-menu, nav');
+    
+    // Dashboard specific locators
+    this.organizationActivityHeading = page.getByRole('heading', { name: 'Organization Activity' });
+    this.slideOverviewHeading = page.getByRole('heading', { name: 'Slide Overview' });
+    this.stainUsageOverviewHeading = page.getByRole('heading', { name: 'Stain Usage Overview' });
+    this.quarterDropdown = page.locator('[role="combobox"]').first();
+    this.quarterDropdownButton = page.getByRole('button', { name: 'Apply' });
+    this.chartArea = page.locator('img').filter({ hasNot: page.locator('img[alt=""]') });
+    this.searchBox = page.getByPlaceholder('Search');
+    this.overrideButton = page.getByRole('button', { name: 'Override' });
+    this.filterButton = page.getByRole('button', { name: 'Filter' });
+    this.filterMenu = page.locator('[role="menu"]');
+    this.slidesTable = page.locator('table, [role="table"]');
+    this.projectsTable = page.locator('table, [role="table"]');
+    this.progressBar = page.locator('[role="progressbar"]');
   }
 
   /**
@@ -39,7 +67,7 @@ export class DashboardPage extends BasePage {
       
       // Try multiple possible dashboard indicators
       const dashboardIndicators = [
-        this.mainContent,
+        this.page.locator('main, .main-content, [role="main"]'),
         this.sidebarMenu,
         this.page.locator('body'),  // At minimum, body should be visible
       ];
@@ -154,5 +182,162 @@ export class DashboardPage extends BasePage {
     }
     
     throw new Error(`Could not find menu item "${menuItemText}" with any known selector`);
+  }
+
+  /**
+   * Get heading element
+   */
+  getHeading(headingName: string): Locator {
+    return this.page.getByRole('heading', { name: headingName });
+  }
+
+  /**
+   * Get card element
+   */
+  getCard(cardName: string): Locator {
+    return this.page.getByRole('heading', { name: cardName });
+  }
+
+  /**
+   * Get icon element
+   */
+  getIcon(iconType: string): Locator {
+    return this.page.locator(`img[alt="${iconType}"], img`).first();
+  }
+
+  /**
+   * Get metric element
+   */
+  getMetric(metricName: string): Locator {
+    return this.page.locator(`text=${metricName}`);
+  }
+
+  /**
+   * Get metric count elements
+   */
+  getMetricCounts(): Locator {
+    return this.page.getByRole('heading', { level: 6 }).filter({ hasText: /^\d+$/ });
+  }
+
+  /**
+   * Get quality label
+   */
+  getQualityLabel(labelName: string): Locator {
+    return this.page.locator(`//*[text()="${labelName}"]`);
+  }
+
+  /**
+   * Get progress bar
+   */
+  getProgressBar(): Locator {
+    return this.progressBar;
+  }
+
+  /**
+   * Get stain type element
+   */
+  getStainType(stainType: string): Locator {
+    return this.page.locator(`text=${stainType}`);
+  }
+
+  /**
+   * Get button by name
+   */
+  getButton(buttonName: string): Locator {
+    return this.page.getByRole('button', { name: buttonName });
+  }
+
+  /**
+   * Get tab element
+   */
+  getTab(tabName: string): Locator {
+    return this.page.getByRole('tab', { name: tabName });
+  }
+
+  /**
+   * Get search box
+   */
+  getSearchBox(placeholder: string): Locator {
+    return this.page.getByPlaceholder(placeholder);
+  }
+
+  /**
+   * Get table column
+   */
+  getTableColumn(columnName: string): Locator {
+    if (columnName === 'Checkbox') {
+      return this.page.locator('input[type="checkbox"]');
+    }
+    return this.page.locator(`text=${columnName}`);
+  }
+
+  /**
+   * Get sortable column button
+   */
+  getSortableColumn(columnName: string): Locator {
+    return this.page.getByRole('button', { name: columnName });
+  }
+
+  /**
+   * Get filter menu
+   */
+  getFilterMenu(): Locator {
+    return this.filterMenu;
+  }
+
+  /**
+   * Get filter option
+   */
+  getFilterOption(optionName: string): Locator {
+    return this.page.locator(`//ul[@role="menu"]//*[text()="${optionName}"]`);
+  }
+
+  /**
+   * Get quarter dropdown
+   */
+  getQuarterDropdown(): Locator {
+    return this.quarterDropdown;
+  }
+
+  /**
+   * Get month label
+   */
+  getMonthLabel(month: string): Locator {
+    return this.page.locator(`text=${month}`);
+  }
+
+  /**
+   * Get description element
+   */
+  getDescription(description: string): Locator {
+    return this.page.locator(`text=${description}`);
+  }
+
+  /**
+   * Get status element
+   */
+  getStatus(statusName: string): Locator {
+    return this.page.locator(`text=${statusName}`);
+  }
+
+  /**
+   * Get chart area
+   */
+  getChartArea(): Locator {
+    return this.chartArea;
+  }
+
+  /**
+   * Get count elements
+   */
+  getCounts(): Locator {
+    return this.page.getByRole('heading', { level: 5 });
+  }
+
+  /**
+   * Get icon elements
+   */
+  getIcons(): Locator {
+    return this.page.locator('img');
   }
 }

@@ -2,226 +2,237 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import { DashboardPage } from '../pages/dashboard.page';
-import { DataHelper } from '../utils/data.helper';
+import { SidebarComponent } from '../components/sidebar.components';
 import { environment } from '../config/environment';
-import { LoginPage } from '../pages/login.page';
 
+let sidebarComponent: SidebarComponent;
 let dashboardPage: DashboardPage;
-let loginPage: LoginPage;
 
-// Given Steps
-Given('I am logged in to the application', async function (this: CustomWorld) {
-  this.logger.step('Perform login to access dashboard');
-  loginPage = new LoginPage(this.page);
+// Function to get current quarter text based on current date
+function getCurrentQuarterText(): string {
+  const now = new Date();
+  const month = now.getMonth(); // 0-11
+  const year = now.getFullYear();
+  
+  let quarter: number;
+  let monthRange: string;
+  
+  if (month >= 0 && month <= 2) {
+    // Q1: January - March
+    quarter = 1;
+    monthRange = 'January - March';
+  } else if (month >= 3 && month <= 5) {
+    // Q2: April - June
+    quarter = 2;
+    monthRange = 'April - June';
+  } else if (month >= 6 && month <= 8) {
+    // Q3: July - September
+    quarter = 3;
+    monthRange = 'July - September';
+  } else {
+    // Q4: October - December
+    quarter = 4;
+    monthRange = 'October - December';
+  }
+  
+  return `Q${quarter} ${monthRange} ${year}`;
+}
 
-  // Navigate to base URL
-  const baseUrl = environment.get('baseUrl');
-  await loginPage.navigateToLoginPage(baseUrl);
+const quarterText = getCurrentQuarterText();
 
-  this.logger.step('Enter valid credentials');
-  const credentials = DataHelper.getLoginCredentials('validUser');
-  await loginPage.enterUsername(credentials.username);
-  await loginPage.enterPassword(credentials.password);
-  await loginPage.clickLoginButton();
-  await loginPage.waitForSuccessfulLogin();
-
-  const currentUrl = await loginPage.getCurrentUrl();
-  this.logger.assertion(`Home (Dashboard) Page URL: ${currentUrl}`, !currentUrl.includes('login'));
-
-  // The URL should not contain 'login' after successful login
-  expect(currentUrl).not.toContain('login');
-});
-
-Given('I am on the dashboard', async function (this: CustomWorld) {
-  this.logger.step('Navigate to dashboard');
+// Page load and basic verification
+Given('the user is on the Dashboard page', async function(this: CustomWorld) {
+  sidebarComponent = new SidebarComponent(this.page);
   dashboardPage = new DashboardPage(this.page);
+  await sidebarComponent.clickDashboard();
+  await sidebarComponent.waitForMenuItemActive('Dashboard');
+  expect(await sidebarComponent.isMenuItemActive('Dashboard')).toBe(true);
+});
 
+Then('the URL should be baseUrl', async function(this: CustomWorld) {
+  const currentUrl = this.page.url();
   const baseUrl = environment.get('baseUrl');
-  await this.page.goto(baseUrl);
-  await this.page.waitForLoadState('networkidle');
+  expect(currentUrl).toBe(baseUrl);
 });
 
-// When Steps
-When('I navigate to the dashboard', async function (this: CustomWorld) {
-  this.logger.step('Navigate to dashboard');
-  dashboardPage = new DashboardPage(this.page);
-
-  const baseUrl = environment.get('baseUrl');
-  await dashboardPage.navigate(baseUrl);
-});
-
-When('I click on a menu item {string}', async function (this: CustomWorld, menuItem: string) {
-  this.logger.step(`Click on menu item: ${menuItem}`);
-  try {
-    await dashboardPage.navigateToMenuItem(menuItem);
-  } catch (error) {
-    this.logger.error(`Failed to click menu item "${menuItem}": ${error}`);
-    throw error;
-  }
-});
-
-When('I click on the user profile menu', async function (this: CustomWorld) {
-  this.logger.step('Click on user profile menu');
-  try {
-    await dashboardPage.clickUserProfileMenu();
-  } catch (error) {
-    this.logger.error(`Failed to click user profile menu: ${error}`);
-    throw error;
-  }
-});
-
-When('I click the logout button', async function (this: CustomWorld) {
-  this.logger.step('Click logout button');
-
-  try {
-    // Try multiple possible logout selectors
-    const logoutSelectors = [
-      'button:has-text("Logout")',
-      'a:has-text("Logout")',
-      '[data-testid="logout"]',
-      'button:has-text("Log out")',
-      'a:has-text("Log out")',
-      'button:has-text("Sign out")',
-      'a:has-text("Sign out")',
-      '[aria-label*="logout" i]',
-      '[aria-label*="sign out" i]',
-    ];
-
-    for (const selector of logoutSelectors) {
-      try {
-        const element = this.page.locator(selector).first();
-        if (await element.isVisible({ timeout: 2000 })) {
-          await element.click({ timeout: 5000 });
-          this.logger.info(`Clicked logout using selector: ${selector}`);
-          await this.page.waitForLoadState('networkidle', { timeout: 10000 });
-          return;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    throw new Error('Could not find logout button with any known selector');
-  } catch (error) {
-    this.logger.error(`Failed to click logout button: ${error}`);
-    throw error;
-  }
-});
-
-// Then Steps
-Then('I should see the dashboard page', async function (this: CustomWorld) {
-  this.logger.step('Verify dashboard page is displayed');
-
-  try {
-    // Wait for page to settle
-    await this.page.waitForLoadState('networkidle', { timeout: 15000 });
-
-    // Check we're on the correct URL (not on login/auth page)
-    const currentUrl = this.page.url();
-    this.logger.info(`Current URL: ${currentUrl}`);
-
-    const isOnDashboard = !currentUrl.includes('/login') &&
-      !currentUrl.includes('/auth') &&
-      !currentUrl.includes('auth0.com/u/login');
-
-    if (!isOnDashboard) {
-      this.logger.assertion('Dashboard is loaded', false);
-      expect(isOnDashboard).toBeTruthy();
-      return;
-    }
-
-    // Verify page content loaded (check for body, html)
-    const bodyVisible = await this.page.locator('body').isVisible();
-    this.logger.assertion('Dashboard page content is loaded', bodyVisible);
-    expect(bodyVisible).toBeTruthy();
-  } catch (error) {
-    this.logger.error(`Failed to verify dashboard: ${error}`);
-    throw error;
-  }
-});
-
-Then('I should see my user information', async function (this: CustomWorld) {
-  this.logger.step('Verify user information is displayed');
-
-  try {
-    // Check for any user-related element on the page
-    const userIndicatorSelectors = [
-      '.user-profile',
-      '.profile-menu',
-      '[data-testid="user-menu"]',
-      '[class*="avatar" i]',
-      '[class*="user" i]',
-      'img[alt*="user" i]',
-      'img[alt*="profile" i]',
-      '[aria-label*="user" i]',
-      '[aria-label*="profile" i]',
-    ];
-
-    for (const selector of userIndicatorSelectors) {
-      try {
-        const element = this.page.locator(selector).first();
-        if (await element.isVisible({ timeout: 2000 })) {
-          this.logger.assertion('User information is visible', true);
-          return;
-        }
-      } catch {
-        continue;
-      }
-    }
-
-    // If no specific user indicator found, just verify we're logged in (on dashboard page)
-    const currentUrl = this.page.url();
-    const isOnDashboard = !currentUrl.includes('login') && !currentUrl.includes('auth');
-    this.logger.assertion('User is on dashboard (logged in)', isOnDashboard);
-    expect(isOnDashboard).toBeTruthy();
-  } catch (error) {
-    this.logger.error(`Failed to verify user information: ${error}`);
-    throw error;
-  }
-});
-
-Then('I should see the {string} page', async function (this: CustomWorld, pageName: string) {
-  this.logger.step(`Verify ${pageName} page is displayed`);
-
-  await this.page.waitForLoadState('networkidle');
-
-  // Check URL or page title contains the page name
-  const currentUrl = await this.page.url();
+Then('the page title should be {string}', async function(this: CustomWorld, title: string) {
   const pageTitle = await this.page.title();
-
-  this.logger.info(`Current URL: ${currentUrl}`);
-  this.logger.info(`Page Title: ${pageTitle}`);
-
-  // Verify page loaded (adjust based on actual application)
-  const pageLoaded = currentUrl.toLowerCase().includes(pageName.toLowerCase()) ||
-    pageTitle.toLowerCase().includes(pageName.toLowerCase());
-
-  this.logger.assertion(`${pageName} page is loaded`, pageLoaded);
+  expect(pageTitle).toBe(title);
 });
 
-Then('I should be redirected to the login page', async function (this: CustomWorld) {
-  this.logger.step('Verify redirect to login page');
-
-  await this.page.waitForLoadState('networkidle');
-
-  const currentUrl = await this.page.url();
-  this.logger.info(`Current URL: ${currentUrl}`);
-
-  const isLoginPage = currentUrl.includes('login') || currentUrl === environment.get('baseUrl');
-  this.logger.assertion('Redirected to login page', isLoginPage);
+// Slide Overview card
+Then('the {string} card should be displayed', async function(this: CustomWorld, cardName: string) {
+  const card = dashboardPage.getCard(cardName);
+  await expect(card).toBeVisible();
 });
 
-Then('I should not be able to access the dashboard', async function (this: CustomWorld) {
-  this.logger.step('Verify dashboard is not accessible');
+Then('the card should have a {string}', async function(this: CustomWorld, iconType: string) {
+  const icon = dashboardPage.getIcon(iconType);
+  await expect(icon).toBeVisible();
+});
 
-  // Try to access dashboard URL
-  const baseUrl = environment.get('baseUrl');
-  await this.page.goto(baseUrl + '/dashboard');
-  await this.page.waitForLoadState('networkidle');
+Then('the following metrics should be displayed:', async function(this: CustomWorld, dataTable) {
+  const metrics = dataTable.hashes();
+  
+  for (const metric of metrics) {
+    const metricName = metric['Metric'];
+    const metricElement = dashboardPage.getMetric(metricName);
+    await expect(metricElement).toBeVisible();
+  }
+});
 
-  const currentUrl = await this.page.url();
+Then('each Slide Overview metric should display a count value', async function(this: CustomWorld) {
+  const counts = dashboardPage.getMetricCounts();
+  const count = await counts.count();
+  expect(count).toBeGreaterThan(0);
+});
 
-  // Should be redirected to login
-  const redirectedToLogin = currentUrl.includes('login') || currentUrl === baseUrl;
-  this.logger.assertion('Redirected away from dashboard', redirectedToLogin);
+Then('the quality metric should show Pass Fail labels', async function(this: CustomWorld) {
+  const passLabel = dashboardPage.getQualityLabel('Pass');
+  const failLabel = dashboardPage.getQualityLabel('Fail');
+  await expect(passLabel).toBeVisible();
+  await expect(failLabel).toBeVisible();
+});
+
+Then('a quality progress bar should be displayed', async function(this: CustomWorld) {
+  const progressBar = dashboardPage.getProgressBar();
+  await expect(progressBar.first()).toBeVisible();
+});
+
+// Stain Usage Overview
+Then('the following stain type cards should be displayed:', async function(this: CustomWorld, dataTable) {
+  const stainTypes = dataTable.hashes();
+  
+  for (const stain of stainTypes) {
+    const stainType = stain['Stain Type'];
+    const stainElement = dashboardPage.getStainType(stainType);
+    await expect(stainElement.first()).toBeVisible();
+  }
+});
+
+Then('each stain card should have an icon', async function(this: CustomWorld) {
+  // Verify icons are present near stain type names
+  const icons = dashboardPage.getIcons();
+  const count = await icons.count();
+  expect(count).toBeGreaterThan(0);
+});
+
+Then('each stain card should display stain counts for:', async function(this: CustomWorld, dataTable) {
+  const statuses = dataTable.hashes();
+  
+  for (const status of statuses) {
+    const statusName = status['Status'];
+    const statusElement = dashboardPage.getStatus(statusName);
+    await expect(statusElement.first()).toBeVisible();
+  }
+});
+
+// Quarter selector and chart
+Then('a quarter selector dropdown should be displayed', async function(this: CustomWorld) {
+  const dropdown = dashboardPage.getQuarterDropdown();
+  await expect(dropdown).toBeVisible();
+  const text = await dropdown.getAttribute('value');
+  expect(text).toContain(quarterText);
+});
+
+Then('a chart area should be displayed', async function(this: CustomWorld) {
+  // Chart area is represented by the graph visualization
+  const chartArea = dashboardPage.getChartArea();
+  await expect(chartArea.first()).toBeVisible();
+});
+
+// Organization Overview
+Then('the description {string} should be displayed', async function(this: CustomWorld, description: string) {
+  const descElement = dashboardPage.getDescription(description);
+  await expect(descElement).toBeVisible();
+});
+
+Then('the following tabs should be displayed in Organization Overview:', async function(this: CustomWorld, dataTable) {
+  const tabs = dataTable.hashes();
+  
+  for (const tab of tabs) {
+    const tabName = tab['Tab Name'];
+    const tabElement = dashboardPage.getTab(tabName);
+    await expect(tabElement).toBeVisible();
+  }
+});
+
+// Slides tab controls
+Then('a search box should be displayed with placeholder {string}', async function(this: CustomWorld, placeholder: string) {
+  const searchBox = dashboardPage.getSearchBox(placeholder);
+  await expect(searchBox).toBeVisible();
+});
+
+Then('an {string} button should be displayed', async function(this: CustomWorld, buttonName: string) {
+  const button = dashboardPage.getButton(buttonName);
+  await expect(button.first()).toBeVisible();
+});
+
+// Action buttons
+Then('the following action buttons should be displayed:', async function(this: CustomWorld, dataTable) {
+  const buttons = dataTable.hashes();
+  
+  for (const button of buttons) {
+    const buttonName = button['Button Name'];
+    const buttonElement = dashboardPage.getButton(buttonName);
+    await expect(buttonElement).toBeVisible();
+  }
+});
+
+// Table headers
+Then('the slides table should display the following columns:', async function(this: CustomWorld, dataTable) {
+  const columns = dataTable.hashes();
+  
+  for (const column of columns) {
+    const columnName = column['Column Name'];
+    if (columnName !== 'Checkbox') {
+      const columnElement = dashboardPage.getTableColumn(columnName);
+      await expect(columnElement.first()).toBeVisible();
+    }
+  }
+});
+
+Then('the following columns should have sort icons:', async function(this: CustomWorld, dataTable) {
+  const columns = dataTable.hashes();
+  
+  for (const column of columns) {
+    const columnName = column['Column Name'];
+    const columnButton = dashboardPage.getSortableColumn(columnName);
+    await expect(columnButton).toBeVisible();
+  }
+});
+
+// Filter menu
+When('the user clicks on {string} button', async function(this: CustomWorld, elementName: string) {
+  const element = dashboardPage.getButton(elementName);
+  await element.click();
+  await this.page.waitForTimeout(500);
+});
+
+Then('a filter menu should be displayed', async function(this: CustomWorld) {
+  const menu = dashboardPage.getFilterMenu();
+  await expect(menu).toBeVisible();
+});
+
+Then('the following filter options should be available:', async function(this: CustomWorld, dataTable) {
+  const filters = dataTable.hashes();
+  
+  for (const filter of filters) {
+    const filterOption = filter['Filter Option'];
+    const filterElement = dashboardPage.getFilterOption(filterOption);
+    await expect(filterElement).toBeVisible();
+  }
+
+  await this.page.click('body'); // Click outside to close any open menus
+});
+
+// Projects tab
+Then('the projects table should display the following columns:', async function(this: CustomWorld, dataTable) {
+  const columns = dataTable.hashes();
+  
+  for (const column of columns) {
+    const columnName = column['Column Name'];
+    const columnElement = dashboardPage.getTableColumn(columnName);
+    await expect(columnElement).toBeVisible();
+  }
 });

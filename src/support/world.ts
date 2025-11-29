@@ -31,15 +31,27 @@ export class CustomWorldImpl extends World implements CustomWorld {
     const browser = browserType || this.parameters?.browser || environment.get('browser');
     
     this.browser = await BrowserManager.launchBrowser(browser);
-    this.context = await BrowserManager.createContext();
-    this.page = await BrowserManager.createPage();
+    
+    // Try to get existing page/context first (for non-login features)
+    try {
+      this.page = BrowserManager.getPage();
+      this.context = BrowserManager.getContext();
+      this.logger.info('Reusing existing page and context');
+    } catch (error) {
+      // If page/context don't exist, create new ones
+      this.context = await BrowserManager.createContext();
+      this.page = await BrowserManager.createPage();
+      this.logger.info('Created new page and context');
+    }
     
     this.logger.info('World initialized successfully');
   }
 
   async cleanup(): Promise<void> {
     this.logger.info('Cleaning up world');
-    await BrowserManager.cleanup();
+    // Only cleanup page and context for login features
+    // For non-login features, page/context are kept open to maintain login state
+    await BrowserManager.cleanupScenario();
     this.logger.info('World cleanup completed');
   }
 }

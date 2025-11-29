@@ -10,13 +10,19 @@ export class BrowserManager {
   private static browser: Browser;
   private static context: BrowserContext;
   private static page: Page;
+  private static browserLaunchedForFeature: boolean = false;
 
   /**
-   * Launch browser
+   * Launch browser for feature file (one instance per feature)
    */
-  static async launchBrowser(browserType?: 'chromium' | 'firefox' | 'webkit'): Promise<Browser> {
+  static async launchBrowserForFeature(browserType?: 'chromium' | 'firefox' | 'webkit'): Promise<Browser> {
+    if (this.browser && this.browserLaunchedForFeature) {
+      logger.info('Browser already launched for this feature, reusing instance');
+      return this.browser;
+    }
+
     const selectedBrowser = browserType || environment.get('browser');
-    logger.info(`Launching browser: ${selectedBrowser}`);
+    logger.info(`Launching browser for feature: ${selectedBrowser}`);
 
     const browserConfig = {
       headless: environment.get('headless'),
@@ -35,8 +41,22 @@ export class BrowserManager {
         this.browser = await chromium.launch(browserConfig);
     }
 
-    logger.info('Browser launched successfully');
+    this.browserLaunchedForFeature = true;
+    logger.info('Browser launched successfully for feature');
     return this.browser;
+  }
+
+  /**
+   * Launch browser (legacy method, now delegates to launchBrowserForFeature)
+   */
+  static async launchBrowser(browserType?: 'chromium' | 'firefox' | 'webkit'): Promise<Browser> {
+    // If browser already exists, return it (reuse for scenarios in same feature)
+    if (this.browser && this.browserLaunchedForFeature) {
+      logger.info('Reusing existing browser instance');
+      return this.browser;
+    }
+    
+    return this.launchBrowserForFeature(browserType);
   }
 
   /**
@@ -134,7 +154,18 @@ export class BrowserManager {
     if (this.browser) {
       logger.info('Closing browser');
       await this.browser.close();
+      this.browser = null as any;
+      this.browserLaunchedForFeature = false;
     }
+  }
+
+  /**
+   * Close browser for feature (called at end of feature file)
+   */
+  static async closeBrowserForFeature(): Promise<void> {
+    logger.info('Closing browser instance for feature');
+    await this.closeBrowser();
+    logger.info('Browser instance closed for feature');
   }
 
   /**
@@ -157,13 +188,26 @@ export class BrowserManager {
   }
 
   /**
-   * Cleanup all browser resources
+   * Cleanup scenario resources (page and context only, not browser)
+   */
+  static async cleanupScenario(): Promise<void> {
+    logger.info('Cleaning up scenario resources (page and context only)');
+    await this.closePage();
+    await this.closeContext();
+    // Clear references so new ones can be created
+    this.page = null as any;
+    this.context = null as any;
+    logger.info('Scenario cleanup completed');
+  }
+
+  /**
+   * Cleanup all browser resources (for backward compatibility)
    */
   static async cleanup(): Promise<void> {
     logger.info('Cleaning up browser resources');
     await this.closePage();
     await this.closeContext();
-    await this.closeBrowser();
+    // Don't close browser here - it will be closed by AfterAll hook
     logger.info('Browser cleanup completed');
   }
 }

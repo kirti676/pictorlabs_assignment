@@ -6,7 +6,8 @@ const common = {
     'html:reports/cucumber-report.html',
     'json:reports/cucumber-report.json'
   ],
-  paths: ['src/features/**/*.feature']
+  paths: ['src/features/**/*.feature'],
+  parallel: 1
 };
 
 const chrome = {
