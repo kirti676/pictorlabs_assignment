@@ -1,0 +1,52 @@
+{
+  "login": {
+    "validUser": {
+      "username": "pictor.newqa.guest@pictorlabs.ai",
+      "password": "MUT!RHrc6a!@4Fp",
+      "message": "Success"
+    },
+    "invalidUser": {
+      "username": "invalid@example.com",
+      "password": "InvalidPassword123",
+      "message": "Wrong email or password"
+    }
+  },
+  "users": [
+    {
+      "id": 1,
+      "username": "pictor.newqa.guest@pictorlabs.ai",
+      "password": "MUT!RHrc6a!@4Fp",
+      "firstName": "Test",
+      "lastName": "User",
+      "role": "guest"
+    },
+    {
+      "id": 2,
+      "username": "test.user2@example.com",
+      "password": "Password123",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "admin"
+    }
+  ],
+  "testData": {
+    "searchQuery": "example search",
+    "itemName": "Sample Item",
+    "description": "This is a sample description for testing"
+  },
+  "apiEndpoints": {
+    "baseUrl": "https://development.prism.deepstain.com/",
+    "loginEndpoint": "/auth/login",
+    "dashboardEndpoint": "/dashboard"
+  },
+  "errorMessages": {
+    "invalidCredentials": "Invalid username or password",
+    "requiredField": "This field is required",
+    "networkError": "Network error occurred"
+  },
+  "timeouts": {
+    "short": 5000,
+    "medium": 10000,
+    "long": 30000
+  }
+}

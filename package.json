@@ -1,0 +1,35 @@
+{
+  "name": "playwright-cucumber-typescript-framework",
+  "version": "1.0.0",
+  "description": "Playwright + Cucumber + TypeScript Automation Framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "test:parallel": "cucumber-js --parallel 3",
+    "test:chrome": "cucumber-js --profile chrome",
+    "test:firefox": "cucumber-js --profile firefox",
+    "test:safari": "cucumber-js --profile safari",
+    "test:all-browsers": "npm run test:chrome && npm run test:firefox && npm run test:safari",
+    "clean": "rimraf reports test-results"
+  },
+  "keywords": [
+    "playwright",
+    "cucumber",
+    "typescript",
+    "automation",
+    "testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.3.1",
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.6",
+    "dotenv": "^16.3.1",
+    "multiple-cucumber-html-reporter": "^3.5.0",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "winston": "^3.11.0"
+  }
+}
