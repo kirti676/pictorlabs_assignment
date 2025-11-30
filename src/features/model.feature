@@ -10,7 +10,7 @@ Feature: Model Page UI Validation
 
   @smoke @ui-validation
   Scenario: Validate Model page navigation
-    When the user clicks on the "Model" navigation button
+    When the user clicks on the Model navigation button
     Then the URL should contain "/models"
     And the "Model" navigation button should be active
     And the "Model" navigation icon should be displayed
@@ -19,7 +19,7 @@ Feature: Model Page UI Validation
 
   @ui-validation
   Scenario: Validate total stainers available metric
-    When the user clicks on the "Model" navigation button
+    When the user clicks on the Model navigation button
     Then the "Stain Management" tab should be displayed
     And the "Stain Management" tab should be selected by default
     And the "Total Stainers Available" metric should be displayed
@@ -27,7 +27,7 @@ Feature: Model Page UI Validation
 
   @ui-validation
   Scenario: Validate Auto Deep Stainer section
-    When the user clicks on the "Model" navigation button
+    When the user clicks on the Model navigation button
     Then the "Model" navigation button should be active
     And the "Auto Deep Stainer" section should be displayed
     And the following stains should be displayed:
@@ -40,7 +40,7 @@ Feature: Model Page UI Validation
 
   @ui-validation
   Scenario: Validate Auto Restainer section
-    When the user clicks on the "Model" navigation button
+    When the user clicks on the Model navigation button
     Then the "Model" navigation button should be active
     And the "Auto Restainer" section should be displayed
     And the following stains should be displayed:

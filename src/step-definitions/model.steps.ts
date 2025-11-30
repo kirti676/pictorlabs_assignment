@@ -8,12 +8,12 @@ let modelPage: ModelPage;
 let sidebarComponent: SidebarComponent;
 
 // Navigation steps
-When('the user clicks on the {string} navigation button', async function(this: CustomWorld, buttonName: string) {
+When('the user clicks on the Model navigation button', async function(this: CustomWorld) {
   modelPage = new ModelPage(this.page);
   sidebarComponent = new SidebarComponent(this.page);
-  await sidebarComponent.clickMenuItem(buttonName);
+  await sidebarComponent.clickMenuItem('Model');
   await this.page.waitForLoadState('networkidle');
-  await sidebarComponent.waitForMenuItemActive(buttonName);
+  await sidebarComponent.waitForMenuItemActive('Model');
 });
 
 // Tab verification

@@ -147,16 +147,6 @@ Then('the description {string} should be displayed', async function(this: Custom
   await expect(descElement).toBeVisible();
 });
 
-Then('the following tabs should be displayed in Organization Overview:', async function(this: CustomWorld, dataTable) {
-  const tabs = dataTable.hashes();
-  
-  for (const tab of tabs) {
-    const tabName = tab['Tab Name'];
-    const tabElement = dashboardPage.getTab(tabName);
-    await expect(tabElement).toBeVisible();
-  }
-});
-
 // Slides tab controls
 Then('a search box should be displayed with placeholder {string}', async function(this: CustomWorld, placeholder: string) {
   const searchBox = dashboardPage.getSearchBox(placeholder);

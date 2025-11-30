@@ -57,7 +57,7 @@ Feature: Dashboard Page UI Validation
     Given the user is on the Dashboard page
     Then the "Organization Overview" heading should be displayed
     And the description "All Organization Slides" should be displayed
-    And the following tabs should be displayed in Organization Overview:
+    And the following tabs should be displayed:
       | Tab Name  |
       | Slides    |
       | Projects  |
