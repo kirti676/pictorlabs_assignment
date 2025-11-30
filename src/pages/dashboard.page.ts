@@ -3,45 +3,17 @@ import { BasePage } from './base.page';
 
 // Dashboard page with metrics, charts, and data visualization
 export class DashboardPage extends BasePage {
-  private readonly pageTitle: Locator;
-  private readonly userProfileMenu: Locator;
-  private readonly logoutButton: Locator;
-  private readonly sidebarMenu: Locator;
-  
-  private readonly organizationActivityHeading: Locator;
-  private readonly slideOverviewHeading: Locator;
-  private readonly stainUsageOverviewHeading: Locator;
   private readonly quarterDropdown: Locator;
-  private readonly quarterDropdownButton: Locator;
   private readonly chartArea: Locator;
-  private readonly searchBox: Locator;
-  private readonly overrideButton: Locator;
-  private readonly filterButton: Locator;
   private readonly filterMenu: Locator;
-  private readonly slidesTable: Locator;
-  private readonly projectsTable: Locator;
   private readonly progressBar: Locator;
 
   constructor(page: Page) {
     super(page, 'DashboardPage');
-    
-    this.pageTitle = page.locator('h1, .page-title, [data-testid="page-title"]');
-    this.userProfileMenu = page.locator('.user-profile, .profile-menu, [data-testid="user-menu"]');
-    this.logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout"), [data-testid="logout"]');
-    this.sidebarMenu = page.locator('.sidebar, .side-menu, nav');
-    
-    this.organizationActivityHeading = page.getByRole('heading', { name: 'Organization Activity' });
-    this.slideOverviewHeading = page.getByRole('heading', { name: 'Slide Overview' });
-    this.stainUsageOverviewHeading = page.getByRole('heading', { name: 'Stain Usage Overview' });
+
     this.quarterDropdown = page.locator('[role="combobox"]').first();
-    this.quarterDropdownButton = page.getByRole('button', { name: 'Apply' });
     this.chartArea = page.locator('img').filter({ hasNot: page.locator('img[alt=""]') });
-    this.searchBox = page.getByPlaceholder('Search');
-    this.overrideButton = page.getByRole('button', { name: 'Override' });
-    this.filterButton = page.getByRole('button', { name: 'Filter' });
     this.filterMenu = page.locator('[role="menu"]');
-    this.slidesTable = page.locator('table, [role="table"]');
-    this.projectsTable = page.locator('table, [role="table"]');
     this.progressBar = page.locator('[role="progressbar"]');
   }
 

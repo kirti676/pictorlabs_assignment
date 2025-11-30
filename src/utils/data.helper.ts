@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { environment } from '../config/environment';
 
 // Utility to load and access test data from JSON files
 export class DataHelper {
@@ -46,6 +47,15 @@ export class DataHelper {
   }
 
   static getLoginCredentials(userType: string = 'validUser'): { username: string; password: string; message: string } {
+    // For valid user, use credentials from .env file
+    if (userType === 'validUser') {
+      return {
+        username: environment.get('username'),
+        password: environment.get('password'),
+        message: 'Success'
+      };
+    }
+    // For other user types, fall back to test data
     return this.getData(`login.${userType}`);
   }
 
