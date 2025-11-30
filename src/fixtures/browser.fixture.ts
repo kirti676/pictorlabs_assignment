@@ -23,21 +23,29 @@ export class BrowserManager {
     const selectedBrowser = browserType || environment.get('browser');
     logger.info(`Launching browser for feature: ${selectedBrowser}`);
 
-    const browserConfig = {
+    const baseConfig = {
       headless: environment.get('headless'),
       slowMo: environment.get('slowMo'),
-      args: ['--start-maximized', '--start-fullscreen'],
     };
 
     switch (selectedBrowser) {
       case 'firefox':
-        this.browser = await firefox.launch(browserConfig);
+        this.browser = await firefox.launch({
+          ...baseConfig,
+          args: ['--start-maximized', '--start-fullscreen'],
+        });
         break;
       case 'webkit':
-        this.browser = await webkit.launch(browserConfig);
+        this.browser = await webkit.launch({
+          ...baseConfig,
+          args: ['--width=1920', '--height=1080'],
+        });
         break;
       default:
-        this.browser = await chromium.launch(browserConfig);
+        this.browser = await chromium.launch({
+          ...baseConfig,
+          args: ['--start-maximized', '--start-fullscreen'],
+        });
     }
 
     this.browserLaunchedForFeature = true;
