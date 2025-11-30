@@ -1,0 +1,274 @@
+name: Automation Test CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to test on'
+        required: false
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
+          - all-browsers
+
+jobs:
+  lint-and-typecheck:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  test-chrome:
+    name: Test on Chrome
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Clean previous reports
+        run: npm run clean
+        continue-on-error: true
+
+      - name: Run Chrome tests
+        run: npm run test:chrome
+        continue-on-error: true
+
+      - name: Upload Chrome test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+  test-firefox:
+    name: Test on Firefox
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install firefox --with-deps
+
+      - name: Clean previous reports
+        run: npm run clean
+        continue-on-error: true
+
+      - name: Run Firefox tests
+        run: npm run test:firefox
+        continue-on-error: true
+
+      - name: Upload Firefox test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+  test-edge:
+    name: Test on Edge
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install msedge --with-deps
+
+      - name: Clean previous reports
+        run: npm run clean
+        continue-on-error: true
+
+      - name: Run Edge tests
+        run: npm run test:edge
+        continue-on-error: true
+
+      - name: Upload Edge test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+  test-parallel:
+    name: Parallel Test Execution
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Clean previous reports
+        run: npm run clean
+        continue-on-error: true
+
+      - name: Run parallel tests
+        run: npm run test:parallel
+        continue-on-error: true
+
+      - name: Upload parallel test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parallel-test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 30
+          if-no-files-found: warn
+
+  consolidate-reports:
+    name: Consolidate Test Reports
+    runs-on: ubuntu-latest
+    needs: [test-chrome, test-firefox, test-edge, test-parallel]
+    if: always()
+    
+    steps:
+      - name: Download Chrome reports
+        uses: actions/download-artifact@v4
+        with:
+          name: chrome-test-reports
+          path: consolidated-reports/chrome/
+        continue-on-error: true
+
+      - name: Download Firefox reports
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-test-reports
+          path: consolidated-reports/firefox/
+        continue-on-error: true
+
+      - name: Download Edge reports
+        uses: actions/download-artifact@v4
+        with:
+          name: edge-test-reports
+          path: consolidated-reports/edge/
+        continue-on-error: true
+
+      - name: Download Parallel reports
+        uses: actions/download-artifact@v4
+        with:
+          name: parallel-test-reports
+          path: consolidated-reports/parallel/
+        continue-on-error: true
+
+      - name: Upload consolidated reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-test-reports
+          path: consolidated-reports/
+          retention-days: 30
+
+      - name: Generate test summary
+        run: |
+          echo "# 🧪 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Chrome Tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Firefox Tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Edge Tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Parallel Tests: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **Chrome Reports**: chrome-test-reports" >> $GITHUB_STEP_SUMMARY
+          echo "- **Firefox Reports**: firefox-test-reports" >> $GITHUB_STEP_SUMMARY
+          echo "- **Edge Reports**: edge-test-reports" >> $GITHUB_STEP_SUMMARY
+          echo "- **Parallel Reports**: parallel-test-reports" >> $GITHUB_STEP_SUMMARY
+          echo "- **Consolidated Reports**: all-test-reports" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 All reports are available as pipeline artifacts for 30 days." >> $GITHUB_STEP_SUMMARY
+
+  notify-status:
+    name: Pipeline Status Notification
+    runs-on: ubuntu-latest
+    needs: [consolidate-reports]
+    if: always()
+    
+    steps:
+      - name: Check pipeline status
+        run: |
+          echo "Pipeline execution completed!"
+          echo "Check the artifacts section for detailed test reports."

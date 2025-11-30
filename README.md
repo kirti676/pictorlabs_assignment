@@ -2,6 +2,24 @@
 
 A robust, scalable automation testing framework built with Playwright, Cucumber BDD, and TypeScript for end-to-end testing.
 
+## Quick Start Summary
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Install browsers
+npx playwright install
+
+# 3. Run tests
+npm test
+
+# 4. View reports
+start reports/cucumber-report.html
+```
+
+---
+
 ## Table of Contents
 - [Technology Stack](#technology-stack)
 - [Framework Best Practices](#framework-best-practices)
@@ -43,7 +61,8 @@ A robust, scalable automation testing framework built with Playwright, Cucumber 
 ### 1. **Page Object Model (POM)**
 - Separation of page elements and actions from test logic
 - Reusable page classes with encapsulated methods
-- Base page class for common functionality
+- Base page class for page or locator level actions
+- Common page class for common reusable functionality
 
 ### 2. **Component-Based Architecture**
 - Separate components for reusable UI elements (Header, Sidebar)
@@ -561,46 +580,3 @@ SLOW_MO=1000
 SCREENSHOT_ON_FAILURE=true
 VIDEO_ON_FAILURE=true
 ```
-
----
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests locally
-4. Submit a pull request
-
----
-
-## License
-
-ISC License
-
----
-
-## Contact
-
-For questions or support, please contact the development team.
-
----
-
-## Quick Start Summary
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Install browsers
-npx playwright install
-
-# 3. Run tests
-npm test
-
-# 4. View reports
-start reports/cucumber-report.html
-```
-
----
-
-**Happy Testing!**
