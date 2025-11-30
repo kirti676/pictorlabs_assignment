@@ -36,10 +36,7 @@ export class BrowserManager {
         });
         break;
       case 'webkit':
-        this.browser = await webkit.launch({
-          ...baseConfig,
-          args: ['--width=1920', '--height=1080'],
-        });
+        this.browser = await webkit.launch(baseConfig);
         break;
       default:
         this.browser = await chromium.launch({
