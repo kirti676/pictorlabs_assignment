@@ -5,11 +5,52 @@ import { DashboardPage } from '../pages/dashboard.page';
 import { SidebarComponent } from '../components/sidebar.components';
 import { environment } from '../config/environment';
 
-// Step definitions for dashboard page verification
 let sidebarComponent: SidebarComponent;
 let dashboardPage: DashboardPage;
+let quartersToValidate: string[] = [];
 
-// Calculate current quarter text in format: "Q1 January - March 2025"
+// Calculate expected months for a quarter based on current date
+function calculateExpectedMonths(quarterText: string): string[] {
+  // Parse quarter string: Eg. "Q1 January - March 2025"
+  const quarterMatch = quarterText.match(/Q(\d)\s+\w+\s+-\s+\w+\s+(\d{4})/);
+  if (!quarterMatch) {
+    throw new Error(`Unable to parse quarter string: ${quarterText}`);
+  }
+  
+  const quarterNumber = parseInt(quarterMatch[1]);
+  const quarterYear = parseInt(quarterMatch[2]);
+  
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  const quarterMonths: { [key: number]: string[] } = {
+    1: ['JAN', 'FEB', 'MAR'],
+    2: ['APR', 'MAY', 'JUN'],
+    3: ['JUL', 'AUG', 'SEP'],
+    4: ['OCT', 'NOV', 'DEC']
+  };
+  
+  const allQuarterMonths = quarterMonths[quarterNumber];
+  
+  let expectedMonths: string[];
+  if (quarterYear > currentYear) {
+    expectedMonths = [];
+  } else if (quarterYear === currentYear) {
+    // Show only months up to current month
+    const quarterStartMonth = (quarterNumber - 1) * 3;
+    expectedMonths = allQuarterMonths.filter((month, index) => {
+      const monthNumber = quarterStartMonth + index;
+      return monthNumber <= currentMonth;
+    });
+  } else {
+    expectedMonths = allQuarterMonths;
+  }
+  
+  return expectedMonths;
+}
+
+// Get current quarter text in format: Eg. "Q1 January - March 2025"
 function getCurrentQuarterText(): string {
   const now = new Date();
   const month = now.getMonth(); // 0-11
@@ -210,4 +251,72 @@ Then('the projects table should display the following columns:', async function(
     const columnElement = dashboardPage.getTableColumn(columnName);
     await expect(columnElement).toBeVisible();
   }
+});
+
+When('the user validates all quarters from the quarter dropdown', async function(this: CustomWorld) {
+  this.logger.step('Validating all quarters from the quarter dropdown');
+  
+  const allQuarters = await dashboardPage.getAllAvailableQuarters();
+  this.logger.info(`Found ${allQuarters.length} quarters to validate`);
+  
+  quartersToValidate = allQuarters;
+  
+  expect(allQuarters.length).toBeGreaterThan(0);
+  this.logger.info(`Will validate quarters: ${allQuarters.join(', ')}`);
+});
+
+Then('the chart area should display correct months for each quarter based on current date', async function (this: CustomWorld) {
+  this.logger.step('Validating chart displays correct months for each quarter');
+
+  if (!quartersToValidate || quartersToValidate.length === 0) {
+    throw new Error('No quarters found to validate');
+  }
+
+  for (const quarter of quartersToValidate) {
+    try {
+      this.logger.info(`\n========== Validating Quarter: ${quarter} ==========`);
+
+      await dashboardPage.selectQuarter(quarter);
+
+      await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+
+      const stainUsageCard = this.page.locator('div:has-text("Stain Usage Overview")').first();
+      await stainUsageCard.locator('svg text').first().waitFor({ state: 'attached', timeout: 5000 });
+
+      const chartArea = dashboardPage.getChartArea();
+      await expect(chartArea.first()).toBeVisible();
+
+      const expectedMonths = calculateExpectedMonths(quarter);
+      this.logger.info(`Expected months for ${quarter}: ${expectedMonths.join(', ')}`);
+
+      const actualMonths = await dashboardPage.getChartMonths();
+      this.logger.info(`Found months in chart: ${actualMonths.join(', ')}`);
+
+      if (expectedMonths.length > 0) {
+        for (const expectedMonth of expectedMonths) {
+          const monthFound = actualMonths.some(month => month.toUpperCase().includes(expectedMonth));
+          if (!monthFound) {
+            this.logger.error(`✗ Month ${expectedMonth} NOT found for ${quarter}`);
+            this.logger.error(`Expected: ${expectedMonths.join(', ')}`);
+            this.logger.error(`Actual: ${actualMonths.join(', ')}`);
+
+            await this.page.screenshot({
+              path: `reports/screenshots/missing-month-${expectedMonth}-${Date.now()}.png`,
+              fullPage: true
+            });
+          }
+          expect(monthFound).toBe(true);
+          this.logger.info(`✓ Month ${expectedMonth} found for ${quarter}`);
+        }
+        this.logger.info(`✓ All ${expectedMonths.length} months validated for ${quarter}`);
+      } else {
+        this.logger.info(`✓ No months expected for future quarter ${quarter}`);
+      }
+    } catch (error) {
+      this.logger.error(`Error validating quarter ${quarter}: ${error}`);
+      throw error;
+    }
+  }
+
+  this.logger.info(`\n========== Successfully validated all ${quartersToValidate.length} quarters ==========`);
 });

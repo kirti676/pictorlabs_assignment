@@ -116,3 +116,9 @@ Feature: Dashboard Page UI Validation
       | Creation Date  |
       | Tissue Type    |
       | Stains         |
+
+  @regression @ui
+  Scenario: Validate chart updates for all available quarters
+    Given the user is on the Dashboard page
+    When the user validates all quarters from the quarter dropdown
+    Then the chart area should display correct months for each quarter based on current date

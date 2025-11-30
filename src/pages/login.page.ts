@@ -48,11 +48,6 @@ export class LoginPage extends BasePage {
         await this.page.waitForLoadState('networkidle');
     }
 
-    async clickForgotPassword(): Promise<void> {
-        this.logger.action('Click forgot password link');
-        await this.click(this.forgotPasswordLink, 'Forgot Password Link');
-    }
-
     async getErrorMessage(): Promise<string> {
         this.logger.action('Get error message');
         await this.waitForElement(this.errorMessage, 5000, 'Error Message');
@@ -63,37 +58,21 @@ export class LoginPage extends BasePage {
         return await this.isVisible(this.errorMessage, 'Error Message');
     }
 
-    async getUsernameErrorMessage(): Promise<string> {
-        this.logger.action('Get username error message');
-        await this.waitForElement(this.usernameErrorMessage, 5000, 'Username Error Message');
-        return await this.getInnerText(this.usernameErrorMessage, 'Username Error Message');
-    }
-
-    async getPasswordErrorMessage(): Promise<string> {
-        this.logger.action('Get password error message');
-        await this.waitForElement(this.passwordErrorMessage, 5000, 'Password Error Message');
-        return await this.getInnerText(this.passwordErrorMessage, 'Password Error Message');
-    }
-
-    async isUsernameErrorVisible(): Promise<boolean> {
-        return await this.isVisible(this.usernameErrorMessage, 'Username Error Message');
-    }
-
-    async isPasswordErrorVisible(): Promise<boolean> {
-        return await this.isVisible(this.passwordErrorMessage, 'Password Error Message');
-    }
-
     // Collect all visible error messages from form
     async getAllErrorMessages(): Promise<string> {
         this.logger.action('Get all visible error messages');
         const errors: string[] = [];
 
-        if (await this.isUsernameErrorVisible()) {
-            errors.push(await this.getUsernameErrorMessage());
+        const isUsernameErrorVisible = await this.isVisible(this.usernameErrorMessage, 'Username Error Message');
+        if (isUsernameErrorVisible) {
+            await this.waitForElement(this.usernameErrorMessage, 5000, 'Username Error Message');
+            errors.push(await this.getInnerText(this.usernameErrorMessage, 'Username Error Message'));
         }
 
-        if (await this.isPasswordErrorVisible()) {
-            errors.push(await this.getPasswordErrorMessage());
+        const isPasswordErrorVisible = await this.isVisible(this.passwordErrorMessage, 'Password Error Message');
+        if (isPasswordErrorVisible) {
+            await this.waitForElement(this.passwordErrorMessage, 5000, 'Password Error Message');
+            errors.push(await this.getInnerText(this.passwordErrorMessage, 'Password Error Message'));
         }
 
         return errors.join(', ');

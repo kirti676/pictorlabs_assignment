@@ -29,20 +29,6 @@ export class BasePage {
     await locator.fill(text);
   }
 
-  async type(locator: Locator, text: string, elementName?: string): Promise<void> {
-    this.logger.action(`Type text: "${text}"`, elementName);
-    await locator.waitFor({ state: 'visible' });
-    await locator.type(text);
-  }
-
-  async getText(locator: Locator, elementName?: string): Promise<string> {
-    this.logger.action('Get text', elementName);
-    await locator.waitFor({ state: 'visible' });
-    const text = await locator.textContent() || '';
-    this.logger.info(`Retrieved text: "${text}"`);
-    return text;
-  }
-
   async getInnerText(locator: Locator, elementName?: string): Promise<string> {
     this.logger.action('Get text', elementName);
     await locator.waitFor({ state: 'visible' });
@@ -63,39 +49,6 @@ export class BasePage {
     await locator.waitFor({ state: 'visible', timeout });
   }
 
-  async waitForElementHidden(locator: Locator, timeout: number = 10000, elementName?: string): Promise<void> {
-    this.logger.action(`Wait for element to be hidden (timeout: ${timeout}ms)`, elementName);
-    await locator.waitFor({ state: 'hidden', timeout });
-  }
-
-  async selectOption(locator: Locator, option: string | { label: string } | { value: string }, elementName?: string): Promise<void> {
-    this.logger.action(`Select option`, elementName);
-    await locator.waitFor({ state: 'visible' });
-    await locator.selectOption(option);
-  }
-
-  async check(locator: Locator, elementName?: string): Promise<void> {
-    this.logger.action('Check', elementName);
-    await locator.waitFor({ state: 'visible' });
-    await locator.check();
-  }
-
-  async uncheck(locator: Locator, elementName?: string): Promise<void> {
-    this.logger.action('Uncheck', elementName);
-    await locator.waitFor({ state: 'visible' });
-    await locator.uncheck();
-  }
-
-  async pressKey(key: string): Promise<void> {
-    this.logger.action(`Press key: ${key}`);
-    await this.page.keyboard.press(key);
-  }
-
-  async takeScreenshot(name: string): Promise<Buffer> {
-    this.logger.action(`Taking screenshot: ${name}`);
-    return await this.page.screenshot({ path: `./reports/screenshots/${name}.png`, fullPage: true });
-  }
-
   async getTitle(): Promise<string> {
     const title = await this.page.title();
     this.logger.info(`Page title: ${title}`);
@@ -108,24 +61,4 @@ export class BasePage {
     return url;
   }
 
-  async waitForNavigation(timeout: number = 30000): Promise<void> {
-    this.logger.action('Wait for navigation');
-    await this.page.waitForLoadState('networkidle', { timeout });
-  }
-
-  async reload(): Promise<void> {
-    this.logger.action('Reload page');
-    await this.page.reload();
-  }
-
-  async goBack(): Promise<void> {
-    this.logger.action('Go back');
-    await this.page.goBack();
-  }
-
-  async hover(locator: Locator, elementName?: string): Promise<void> {
-    this.logger.action('Hover', elementName);
-    await locator.waitFor({ state: 'visible' });
-    await locator.hover();
-  }
 }

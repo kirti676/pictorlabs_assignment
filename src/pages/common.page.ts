@@ -82,44 +82,4 @@ export class CommonPage extends BasePage {
     }
   }
 
-  // Verifications
-  async isTabSelected(tabName: string): Promise<boolean> {
-    const tab = this.getTab(tabName);
-    const isSelected = await tab.getAttribute('aria-selected');
-    return isSelected === 'true';
-  }
-
-  async isButtonVisible(buttonName: string): Promise<boolean> {
-    const button = this.getButton(buttonName);
-    return await button.isVisible();
-  }
-
-  async isHeadingVisible(headingText: string): Promise<boolean> {
-    const heading = this.getHeading(headingText);
-    return await heading.isVisible();
-  }
-
-  async isTextVisible(text: string): Promise<boolean> {
-    const textElement = this.getTextElement(text);
-    return await textElement.first().isVisible();
-  }
-
-  async isSectionVisible(sectionName: string): Promise<boolean> {
-    const section = this.getSectionHeading(sectionName);
-    return await section.first().isVisible();
-  }
-
-  async isSearchBoxVisible(placeholder: string): Promise<boolean> {
-    const searchBox = this.getSearchBoxByPlaceholder(placeholder);
-    return await searchBox.isVisible();
-  }
-
-  async areTabsVisible(tabNames: string[]): Promise<boolean[]> {
-    const results: boolean[] = [];
-    for (const tabName of tabNames) {
-      const tab = this.getTab(tabName);
-      results.push(await tab.isVisible());
-    }
-    return results;
-  }
 }

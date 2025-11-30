@@ -45,122 +45,6 @@ export class DashboardPage extends BasePage {
     this.progressBar = page.locator('[role="progressbar"]');
   }
 
-  // Verify dashboard is fully loaded by checking URL and visible elements
-  async isDashboardLoaded(): Promise<boolean> {
-    this.logger.action('Verify dashboard is loaded');
-    try {
-      await this.page.waitForLoadState('networkidle', { timeout: 15000 });
-      
-      const currentUrl = this.page.url();
-      const isOnDashboard = !currentUrl.includes('login') && !currentUrl.includes('auth');
-      
-      if (!isOnDashboard) {
-        return false;
-      }
-      
-      // Check multiple indicators to confirm dashboard load
-      const dashboardIndicators = [
-        this.page.locator('main, .main-content, [role="main"]'),
-        this.sidebarMenu,
-        this.page.locator('body'),
-      ];
-      
-      for (const indicator of dashboardIndicators) {
-        try {
-          await indicator.waitFor({ state: 'visible', timeout: 5000 });
-          return true;
-        } catch {
-          continue;
-        }
-      }
-      
-      return false;
-    } catch (error) {
-      this.logger.error(`Dashboard load check failed: ${error}`);
-      return false;
-    }
-  }
-
-  async getPageTitle(): Promise<string> {
-    this.logger.action('Get page title');
-    return await this.getText(this.pageTitle, 'Page Title');
-  }
-
-  async clickUserProfileMenu(): Promise<void> {
-    this.logger.action('Click user profile menu');
-    
-    await this.page.waitForLoadState('networkidle');
-    
-    const userMenuSelectors = [
-      '.user-profile',
-      '.profile-menu',
-      '[data-testid="user-menu"]',
-      '[aria-label*="user" i]',
-      '[aria-label*="profile" i]',
-      'button:has-text("Profile")',
-      'button[aria-label*="account" i]',
-      '.avatar',
-      '[class*="avatar" i]',
-      '[class*="user" i]',
-      'img[alt*="user" i]',
-      'img[alt*="profile" i]',
-    ];
-    
-    for (const selector of userMenuSelectors) {
-      try {
-        const element = this.page.locator(selector).first();
-        if (await element.isVisible({ timeout: 2000 })) {
-          await element.click({ timeout: 5000 });
-          this.logger.info(`Clicked user menu using selector: ${selector}`);
-          return;
-        }
-      } catch {
-        continue;
-      }
-    }
-    
-    throw new Error('Could not find user profile menu with any known selector');
-  }
-
-  async logout(): Promise<void> {
-    this.logger.step('Logout from application');
-    await this.clickUserProfileMenu();
-    await this.click(this.logoutButton, 'Logout Button');
-  }
-
-  async navigateToMenuItem(menuItemText: string): Promise<void> {
-    this.logger.action(`Navigate to menu item: ${menuItemText}`);
-    
-    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
-    
-    const menuItemSelectors = [
-      `a:has-text("${menuItemText}")`,
-      `button:has-text("${menuItemText}")`,
-      `[data-testid="${menuItemText.toLowerCase()}"]`,
-      `[aria-label="${menuItemText}"]`,
-      `nav a:has-text("${menuItemText}")`,
-      `.sidebar a:has-text("${menuItemText}")`,
-      `[role="navigation"] a:has-text("${menuItemText}")`,
-      `a[href*="${menuItemText.toLowerCase()}"]`,
-    ];
-    
-    for (const selector of menuItemSelectors) {
-      try {
-        const element = this.page.locator(selector).first();
-        if (await element.isVisible({ timeout: 2000 })) {
-          await element.click({ timeout: 5000 });
-          this.logger.info(`Clicked menu item using selector: ${selector}`);
-          await this.page.waitForLoadState('networkidle', { timeout: 5000 });
-          return;
-        }
-      } catch {
-        continue;
-      }
-    }
-    
-    throw new Error(`Could not find menu item "${menuItemText}" with any known selector`);
-  }
-
   getHeading(headingName: string): Locator {
     return this.page.getByRole('heading', { name: headingName });
   }
@@ -228,10 +112,6 @@ export class DashboardPage extends BasePage {
     return this.quarterDropdown;
   }
 
-  getMonthLabel(month: string): Locator {
-    return this.page.locator(`text=${month}`);
-  }
-
   getDescription(description: string): Locator {
     return this.page.locator(`text=${description}`);
   }
@@ -244,11 +124,179 @@ export class DashboardPage extends BasePage {
     return this.chartArea;
   }
 
-  getCounts(): Locator {
-    return this.page.getByRole('heading', { level: 5 });
-  }
-
   getIcons(): Locator {
     return this.page.locator('img');
+  }
+
+  async selectQuarter(quarterText: string): Promise<void> {
+    this.logger.action(`Selecting quarter: ${quarterText}`);
+    
+    try {
+      const stainUsageCard = this.page.locator('div:has-text("Stain Usage Overview")').first();
+      const oldChartContent = await stainUsageCard.textContent().catch(() => '');
+      
+      await this.quarterDropdown.click({ timeout: 5000 });
+      await this.page.locator('[role="option"]').first().waitFor({ state: 'visible', timeout: 5000 });
+      
+      // Try multiple selector strategies
+      try {
+        await this.page.getByRole('option', { name: quarterText }).click({ timeout: 5000 });
+        this.logger.info(`Selected quarter using role selector: ${quarterText}`);
+      } catch {
+        try {
+          await this.page.locator(`text="${quarterText}"`).first().click({ timeout: 5000 });
+          this.logger.info(`Selected quarter using text selector: ${quarterText}`);
+        } catch {
+          await this.page.locator(`text=/.*${quarterText.substring(0, 15)}.*/`).first().click({ timeout: 5000 });
+          this.logger.info(`Selected quarter using partial text selector: ${quarterText}`);
+        }
+      }
+      
+      await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+      
+      // Poll for chart content change
+      try {
+        let contentChanged = false;
+        const startTime = Date.now();
+        const timeout = 5000;
+        
+        while (Date.now() - startTime < timeout && !contentChanged) {
+          const newChartContent = await stainUsageCard.textContent().catch(() => '');
+          if (newChartContent && newChartContent !== oldChartContent && newChartContent.length > 0) {
+            contentChanged = true;
+            this.logger.info('Chart content has changed, update complete');
+            break;
+          }
+          await this.page.evaluate(() => new Promise(resolve => setTimeout(resolve, 300)));
+        }
+        
+        if (!contentChanged) {
+          this.logger.warn('Chart content did not change within expected time');
+        }
+      } catch (error) {
+        this.logger.warn(`Error waiting for chart content change: ${error}`);
+      }
+    } catch (error) {
+      this.logger.error(`Error selecting quarter ${quarterText}: ${error}`);
+      await this.page.keyboard.press('Escape');
+      throw error;
+    }
+  }
+
+  async getChartMonths(): Promise<string[]> {
+    this.logger.action('Extracting months from chart area');
+    
+    const stainUsageCard = this.page.locator('div:has-text("Stain Usage Overview")').first();
+    await stainUsageCard.locator('svg').first().waitFor({ state: 'visible', timeout: 5000 });
+    
+    const months: string[] = [];
+    const monthPattern = /\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/gi;
+    
+    try {
+      // Extract months from SVG text elements
+      const svgTexts = await stainUsageCard.locator('svg text, svg tspan, svg >> text=/.*/').all();
+      this.logger.info(`Found ${svgTexts.length} SVG text elements in chart area`);
+      
+      for (const text of svgTexts) {
+        try {
+          const content = await text.textContent({ timeout: 1000 });
+          if (content) {
+            const trimmed = content.trim().toUpperCase();
+            const monthMatches = trimmed.match(monthPattern);
+            if (monthMatches) {
+              for (const match of monthMatches) {
+                const monthUpper = match.toUpperCase();
+                if (!months.includes(monthUpper)) {
+                  months.push(monthUpper);
+                  this.logger.info(`Found month in SVG: ${monthUpper}`);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // Skip unreadable elements
+        }
+      }
+      
+      // Fallback: search all text content
+      if (months.length < 2) {
+        this.logger.info('Trying additional methods to find months');
+        
+        const allTextElements = await stainUsageCard.locator('*').allTextContents();
+        for (const textContent of allTextElements) {
+          const monthMatches = textContent.match(monthPattern);
+          if (monthMatches) {
+            for (const match of monthMatches) {
+              const monthUpper = match.toUpperCase();
+              if (!months.includes(monthUpper)) {
+                months.push(monthUpper);
+                this.logger.info(`Found month in text content: ${monthUpper}`);
+              }
+            }
+          }
+        }
+      }
+      
+      // Last resort: search entire page
+      if (months.length === 0) {
+        this.logger.warn('No months found in chart area, checking entire page');
+        const pageContent = await this.page.content();
+        const matches = pageContent.match(monthPattern);
+        if (matches) {
+          const uniqueMonths = [...new Set(matches.map(m => m.toUpperCase()))];
+          months.push(...uniqueMonths);
+          this.logger.info(`Found months in page content: ${uniqueMonths.join(', ')}`);
+        }
+      }
+      
+      const uniqueMonths = [...new Set(months)];
+      this.logger.info(`Total unique months found: ${uniqueMonths.join(', ')}`);
+      
+      return uniqueMonths;
+    } catch (error) {
+      this.logger.error(`Error extracting months from chart: ${error}`);
+      return months;
+    }
+  }
+
+  async getAllAvailableQuarters(): Promise<string[]> {
+    this.logger.action('Getting all available quarters from dropdown');
+    
+    await this.quarterDropdown.click();
+    await this.page.locator('[role="option"]').first().waitFor({ state: 'visible', timeout: 5000 });
+    
+    const quarters: string[] = [];
+    
+    try {
+      const options = await this.page.locator('[role="option"]').all();
+      
+      for (const option of options) {
+        const text = await option.textContent();
+        if (text && text.trim()) {
+          quarters.push(text.trim());
+        }
+      }
+      
+      this.logger.info(`Found ${quarters.length} quarters in dropdown: ${quarters.join(', ')}`);
+    } catch (error) {
+      this.logger.warn('Could not get quarters using role selector, trying alternative method');
+      
+      // Fallback: search listbox/menu options
+      const menuOptions = await this.page.locator('[role="listbox"] > *, [role="menu"] > *').all();
+      
+      for (const option of menuOptions) {
+        const text = await option.textContent();
+        if (text && text.trim() && text.includes('Q')) {
+          quarters.push(text.trim());
+        }
+      }
+      
+      this.logger.info(`Found ${quarters.length} quarters using alternative method: ${quarters.join(', ')}`);
+    }
+    
+    await this.page.keyboard.press('Escape');
+    await this.page.locator('[role="option"]').first().waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    
+    return quarters;
   }
 }
