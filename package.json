@@ -6,9 +6,9 @@
   "scripts": {
     "test": "cucumber-js",
     "test:parallel": "cucumber-js --parallel 3",
-    "test:chrome": "cucumber-js --profile chrome",
-    "test:firefox": "cucumber-js --profile firefox",
-    "test:edge": "cucumber-js --profile edge",
+    "test:chrome": "cross-env BROWSER=chromium cucumber-js --profile chrome",
+    "test:firefox": "cross-env BROWSER=firefox cucumber-js --profile firefox",
+    "test:edge": "cross-env BROWSER=webkit cucumber-js --profile edge",
     "test:all-browsers": "npm run test:chrome && npm run test:firefox && npm run test:edge",
     "clean": "rimraf reports test-results"
   },
@@ -25,6 +25,7 @@
     "@cucumber/cucumber": "^10.9.0",
     "@playwright/test": "^1.40.1",
     "@types/node": "^20.10.6",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "multiple-cucumber-html-reporter": "^3.5.0",
     "rimraf": "^5.0.5",

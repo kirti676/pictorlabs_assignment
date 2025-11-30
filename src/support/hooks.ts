@@ -26,7 +26,11 @@ BeforeAll({ timeout: 60000 }, async function () {
   
   isLoggedInForFeature = false;
   
-  await BrowserManager.launchBrowserForFeature();
+  // Get browser type from environment variable (set by cucumber profile or CLI)
+  const browserType = environment.get('browser');
+  logger.info(`Browser type: ${browserType}`);
+  
+  await BrowserManager.launchBrowserForFeature(browserType);
   logger.info('Browser instance ready for feature');
 });
 
