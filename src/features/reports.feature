@@ -8,7 +8,7 @@ Feature: Reports Page UI Validation
     Given the user is logged in to the application
     And the user is on the Dashboard page
 
-  @smoke @ui-validation
+  @smoke @regression @ui
   Scenario: Validate Reports page navigation
     When the user clicks on the Reports navigation button
     Then the URL should contain "/reports"
@@ -17,7 +17,7 @@ Feature: Reports Page UI Validation
     And the page should display the heading "Organization Reports"
     And the page should display the description "Entire organization's Detailed Documents"
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate STAINS tab
     When the user clicks on the Reports navigation button
     Then the following tabs should be displayed:
@@ -30,7 +30,7 @@ Feature: Reports Page UI Validation
     And the Year dropdown should show the current year
     And the "Download Usage Report" button should be displayed
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate STAINS tab stain type details section
     When the user clicks on the Reports navigation button
     Then the "Stain Type Details" heading should be displayed
@@ -43,7 +43,7 @@ Feature: Reports Page UI Validation
     And each stain type should display a collapse/expand icon
     And each stain type should show "Quarter" label
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate USERS tab
     When the user clicks on the Reports navigation button
     And the user clicks on the "USERS" tab
@@ -59,7 +59,7 @@ Feature: Reports Page UI Validation
     And the pagination controls should be displayed
     And the current page number should be highlighted
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate user details view
     When the user clicks on the Reports navigation button
     And the user clicks on the "USERS" tab

@@ -2,13 +2,13 @@ import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
 
-// Create logs directory if it doesn't exist
+// Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Define log format
+// Custom log format with timestamp and error stack trace support
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
@@ -21,35 +21,32 @@ const logFormat = winston.format.combine(
   })
 );
 
-// Create the logger
+// Winston logger with console and file transports
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
   transports: [
-    // Console transport
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
         logFormat
       ),
     }),
-    // File transport - all logs
     new winston.transports.File({
       filename: path.join(logsDir, 'test-execution.log'),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
-    // File transport - error logs only
     new winston.transports.File({
       filename: path.join(logsDir, 'errors.log'),
       level: 'error',
-      maxsize: 5242880, // 5MB
+      maxsize: 5242880,
       maxFiles: 5,
     }),
   ],
 });
 
-// Add scenario-specific logging method
+// Logger wrapper with context support for better traceability
 export class Logger {
   private context: string;
 

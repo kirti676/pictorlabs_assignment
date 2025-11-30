@@ -6,15 +6,14 @@ import fs from 'fs';
 
 const logger = new Logger('BrowserManager');
 
+// Singleton browser manager for lifecycle control and resource management
 export class BrowserManager {
   private static browser: Browser;
   private static context: BrowserContext;
   private static page: Page;
   private static browserLaunchedForFeature: boolean = false;
 
-  /**
-   * Launch browser for feature file (one instance per feature)
-   */
+  // Launch browser once per feature for performance optimization
   static async launchBrowserForFeature(browserType?: 'chromium' | 'firefox' | 'webkit'): Promise<Browser> {
     if (this.browser && this.browserLaunchedForFeature) {
       logger.info('Browser already launched for this feature, reusing instance');
@@ -46,11 +45,7 @@ export class BrowserManager {
     return this.browser;
   }
 
-  /**
-   * Launch browser (legacy method, now delegates to launchBrowserForFeature)
-   */
   static async launchBrowser(browserType?: 'chromium' | 'firefox' | 'webkit'): Promise<Browser> {
-    // If browser already exists, return it (reuse for scenarios in same feature)
     if (this.browser && this.browserLaunchedForFeature) {
       logger.info('Reusing existing browser instance');
       return this.browser;
@@ -59,14 +54,11 @@ export class BrowserManager {
     return this.launchBrowserForFeature(browserType);
   }
 
-  /**
-   * Create browser context
-   */
   static async createContext(options?: any): Promise<BrowserContext> {
     logger.info('Creating browser context');
     
     const contextOptions = {
-      viewport: null, // Use full screen
+      viewport: null,
       recordVideo: environment.get('videoOnFailure') ? {
         dir: './reports/videos/',
       } : undefined,
@@ -78,9 +70,6 @@ export class BrowserManager {
     return this.context;
   }
 
-  /**
-   * Create new page
-   */
   static async createPage(): Promise<Page> {
     logger.info('Creating new page');
     
@@ -90,16 +79,12 @@ export class BrowserManager {
 
     this.page = await this.context.newPage();
     
-    // Set default timeout
     this.page.setDefaultTimeout(environment.get('timeout'));
     
     logger.info('New page created successfully');
     return this.page;
   }
 
-  /**
-   * Get current page
-   */
   static getPage(): Page {
     if (!this.page) {
       throw new Error('Page not initialized. Call createPage() first.');
@@ -107,9 +92,6 @@ export class BrowserManager {
     return this.page;
   }
 
-  /**
-   * Get current context
-   */
   static getContext(): BrowserContext {
     if (!this.context) {
       throw new Error('Context not initialized. Call createContext() first.');
@@ -117,9 +99,6 @@ export class BrowserManager {
     return this.context;
   }
 
-  /**
-   * Get current browser
-   */
   static getBrowser(): Browser {
     if (!this.browser) {
       throw new Error('Browser not initialized. Call launchBrowser() first.');
@@ -127,9 +106,6 @@ export class BrowserManager {
     return this.browser;
   }
 
-  /**
-   * Close page
-   */
   static async closePage(): Promise<void> {
     if (this.page) {
       logger.info('Closing page');
@@ -137,9 +113,6 @@ export class BrowserManager {
     }
   }
 
-  /**
-   * Close context
-   */
   static async closeContext(): Promise<void> {
     if (this.context) {
       logger.info('Closing browser context');
@@ -147,9 +120,6 @@ export class BrowserManager {
     }
   }
 
-  /**
-   * Close browser
-   */
   static async closeBrowser(): Promise<void> {
     if (this.browser) {
       logger.info('Closing browser');
@@ -159,18 +129,13 @@ export class BrowserManager {
     }
   }
 
-  /**
-   * Close browser for feature (called at end of feature file)
-   */
   static async closeBrowserForFeature(): Promise<void> {
     logger.info('Closing browser instance for feature');
     await this.closeBrowser();
     logger.info('Browser instance closed for feature');
   }
 
-  /**
-   * Take screenshot on failure
-   */
+  // Capture screenshot on test failure with timestamp
   static async takeScreenshotOnFailure(scenarioName: string): Promise<void> {
     if (environment.get('screenshotOnFailure') && this.page) {
       const screenshotDir = './reports/screenshots';
@@ -187,27 +152,20 @@ export class BrowserManager {
     }
   }
 
-  /**
-   * Cleanup scenario resources (page and context only, not browser)
-   */
+  // Clean up page and context while keeping browser alive for reuse
   static async cleanupScenario(): Promise<void> {
     logger.info('Cleaning up scenario resources (page and context only)');
     await this.closePage();
     await this.closeContext();
-    // Clear references so new ones can be created
     this.page = null as any;
     this.context = null as any;
     logger.info('Scenario cleanup completed');
   }
 
-  /**
-   * Cleanup all browser resources (for backward compatibility)
-   */
   static async cleanup(): Promise<void> {
     logger.info('Cleaning up browser resources');
     await this.closePage();
     await this.closeContext();
-    // Don't close browser here - it will be closed by AfterAll hook
     logger.info('Browser cleanup completed');
   }
 }

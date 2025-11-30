@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 
+// Utility to load and access test data from JSON files
 export class DataHelper {
   private static testData: any;
 
-  /**
-   * Load test data from JSON file
-   */
+  // Load test data from JSON file
   static loadTestData(filename: string = 'testData.json'): any {
     const filepath = path.join(process.cwd(), 'src', 'data', filename);
     
@@ -19,9 +18,7 @@ export class DataHelper {
     return this.testData;
   }
 
-  /**
-   * Get test data by key path (e.g., 'login.validUser.username')
-   */
+  // Access nested data using dot notation (e.g., 'login.validUser')
   static getData(keyPath: string): any {
     if (!this.testData) {
       this.loadTestData();
@@ -41,9 +38,6 @@ export class DataHelper {
     return value;
   }
 
-  /**
-   * Get all test data
-   */
   static getAllData(): any {
     if (!this.testData) {
       this.loadTestData();
@@ -51,40 +45,25 @@ export class DataHelper {
     return this.testData;
   }
 
-  /**
-   * Get login credentials
-   */
   static getLoginCredentials(userType: string = 'validUser'): { username: string; password: string; message: string } {
     return this.getData(`login.${userType}`);
   }
 
-  /**
-   * Get user by id
-   */
   static getUserById(userId: number): any {
     const users = this.getData('users');
     return users.find((user: any) => user.id === userId);
   }
 
-  /**
-   * Get random user
-   */
   static getRandomUser(): any {
     const users = this.getData('users');
     const randomIndex = Math.floor(Math.random() * users.length);
     return users[randomIndex];
   }
 
-  /**
-   * Get error message
-   */
   static getErrorMessage(key: string): string {
     return this.getData(`errorMessages.${key}`);
   }
 
-  /**
-   * Get timeout value
-   */
   static getTimeout(key: string): number {
     return this.getData(`timeouts.${key}`);
   }

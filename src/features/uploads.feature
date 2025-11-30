@@ -8,7 +8,7 @@ Feature: Uploads Page UI Validation
     Given the user is logged in to the application
     And the user is on the Dashboard page
 
-  @smoke @ui-validation
+  @smoke @regression @ui
   Scenario: Validate Uploads page navigation
     When the user clicks on the Uploads navigation button
     Then the URL should contain "/uploads"
@@ -17,7 +17,7 @@ Feature: Uploads Page UI Validation
     And the page should display the heading "Slide Upload Dashboard"
     And the page should display the description "Slide Management Dashboard"
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate UPLOAD tab
     When the user clicks on the Uploads navigation button
     Then the following tabs should be displayed:
@@ -35,7 +35,7 @@ Feature: Uploads Page UI Validation
       | Uploaded slides may be auto-processed based on your organization's staining rules |
       | For large batches, please allow a few minutes for processing to begin          |
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate drag and drop upload area
     When the user clicks on the Uploads navigation button
     Then the "UPLOAD" tab should be selected by default
@@ -46,7 +46,7 @@ Feature: Uploads Page UI Validation
     And the maximum file size should be displayed: "40 GB per file"
     And the "Upload" button should be displayed in the upload area
 
-  @ui-validation
+  @regression @ui
   Scenario: Navigate to In Progress tab
     When the user clicks on the Uploads navigation button
     And the user clicks on the "IN PROGRESS" tab
@@ -54,7 +54,7 @@ Feature: Uploads Page UI Validation
     And the page should display the heading "Slide Upload(s) In Progress"
     And the description should state "Your files are uploading in the background. You may continue using the dashboard while this completes. Fully uploaded slides will automatically appear in your workspace."
 
-  @ui-validation
+  @regression @ui
   Scenario: Navigate to Completed tab
     When the user clicks on the Uploads navigation button
     And the user clicks on the "COMPLETED" tab
@@ -62,7 +62,7 @@ Feature: Uploads Page UI Validation
     And the page should display the heading "Slide Upload History"
     And the page should display the description "View slide(s) upload history, either batch upload or individual."
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate tab switching functionality
     When the user clicks on the Uploads navigation button
     And the user switches between tabs

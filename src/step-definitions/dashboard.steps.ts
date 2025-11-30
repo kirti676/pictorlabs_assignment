@@ -5,10 +5,11 @@ import { DashboardPage } from '../pages/dashboard.page';
 import { SidebarComponent } from '../components/sidebar.components';
 import { environment } from '../config/environment';
 
+// Step definitions for dashboard page verification
 let sidebarComponent: SidebarComponent;
 let dashboardPage: DashboardPage;
 
-// Function to get current quarter text based on current date
+// Calculate current quarter text in format: "Q1 January - March 2025"
 function getCurrentQuarterText(): string {
   const now = new Date();
   const month = now.getMonth(); // 0-11
@@ -18,19 +19,15 @@ function getCurrentQuarterText(): string {
   let monthRange: string;
   
   if (month >= 0 && month <= 2) {
-    // Q1: January - March
     quarter = 1;
     monthRange = 'January - March';
   } else if (month >= 3 && month <= 5) {
-    // Q2: April - June
     quarter = 2;
     monthRange = 'April - June';
   } else if (month >= 6 && month <= 8) {
-    // Q3: July - September
     quarter = 3;
     monthRange = 'July - September';
   } else {
-    // Q4: October - December
     quarter = 4;
     monthRange = 'October - December';
   }
@@ -40,7 +37,6 @@ function getCurrentQuarterText(): string {
 
 const quarterText = getCurrentQuarterText();
 
-// Page load and basic verification
 Given('the user is on the Dashboard page', async function(this: CustomWorld) {
   sidebarComponent = new SidebarComponent(this.page);
   dashboardPage = new DashboardPage(this.page);
@@ -60,7 +56,6 @@ Then('the page title should be {string}', async function(this: CustomWorld, titl
   expect(pageTitle).toBe(title);
 });
 
-// Slide Overview card
 Then('the {string} card should be displayed', async function(this: CustomWorld, cardName: string) {
   const card = dashboardPage.getCard(cardName);
   await expect(card).toBeVisible();
@@ -99,7 +94,6 @@ Then('a quality progress bar should be displayed', async function(this: CustomWo
   await expect(progressBar.first()).toBeVisible();
 });
 
-// Stain Usage Overview
 Then('the following stain type cards should be displayed:', async function(this: CustomWorld, dataTable) {
   const stainTypes = dataTable.hashes();
   
@@ -111,7 +105,6 @@ Then('the following stain type cards should be displayed:', async function(this:
 });
 
 Then('each stain card should have an icon', async function(this: CustomWorld) {
-  // Verify icons are present near stain type names
   const icons = dashboardPage.getIcons();
   const count = await icons.count();
   expect(count).toBeGreaterThan(0);
@@ -127,7 +120,6 @@ Then('each stain card should display stain counts for:', async function(this: Cu
   }
 });
 
-// Quarter selector and chart
 Then('a quarter selector dropdown should be displayed', async function(this: CustomWorld) {
   const dropdown = dashboardPage.getQuarterDropdown();
   await expect(dropdown).toBeVisible();
@@ -136,18 +128,15 @@ Then('a quarter selector dropdown should be displayed', async function(this: Cus
 });
 
 Then('a chart area should be displayed', async function(this: CustomWorld) {
-  // Chart area is represented by the graph visualization
   const chartArea = dashboardPage.getChartArea();
   await expect(chartArea.first()).toBeVisible();
 });
 
-// Organization Overview
 Then('the description {string} should be displayed', async function(this: CustomWorld, description: string) {
   const descElement = dashboardPage.getDescription(description);
   await expect(descElement).toBeVisible();
 });
 
-// Slides tab controls
 Then('a search box should be displayed with placeholder {string}', async function(this: CustomWorld, placeholder: string) {
   const searchBox = dashboardPage.getSearchBox(placeholder);
   await expect(searchBox).toBeVisible();
@@ -158,7 +147,6 @@ Then('an {string} button should be displayed', async function(this: CustomWorld,
   await expect(button.first()).toBeVisible();
 });
 
-// Action buttons
 Then('the following action buttons should be displayed:', async function(this: CustomWorld, dataTable) {
   const buttons = dataTable.hashes();
   
@@ -169,7 +157,6 @@ Then('the following action buttons should be displayed:', async function(this: C
   }
 });
 
-// Table headers
 Then('the slides table should display the following columns:', async function(this: CustomWorld, dataTable) {
   const columns = dataTable.hashes();
   
@@ -192,7 +179,6 @@ Then('the following columns should have sort icons:', async function(this: Custo
   }
 });
 
-// Filter menu
 When('the user clicks on {string} button', async function(this: CustomWorld, elementName: string) {
   const element = dashboardPage.getButton(elementName);
   await element.click();
@@ -213,10 +199,9 @@ Then('the following filter options should be available:', async function(this: C
     await expect(filterElement).toBeVisible();
   }
 
-  await this.page.click('body'); // Click outside to close any open menus
+  await this.page.click('body');
 });
 
-// Projects tab
 Then('the projects table should display the following columns:', async function(this: CustomWorld, dataTable) {
   const columns = dataTable.hashes();
   

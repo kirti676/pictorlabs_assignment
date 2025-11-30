@@ -1,14 +1,13 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page';
 
+// Dashboard page with metrics, charts, and data visualization
 export class DashboardPage extends BasePage {
-  // Locators initialized in constructor
   private readonly pageTitle: Locator;
   private readonly userProfileMenu: Locator;
   private readonly logoutButton: Locator;
   private readonly sidebarMenu: Locator;
   
-  // Dashboard specific locators
   private readonly organizationActivityHeading: Locator;
   private readonly slideOverviewHeading: Locator;
   private readonly stainUsageOverviewHeading: Locator;
@@ -26,13 +25,11 @@ export class DashboardPage extends BasePage {
   constructor(page: Page) {
     super(page, 'DashboardPage');
     
-    // Initialize all locators in constructor
     this.pageTitle = page.locator('h1, .page-title, [data-testid="page-title"]');
     this.userProfileMenu = page.locator('.user-profile, .profile-menu, [data-testid="user-menu"]');
     this.logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout"), [data-testid="logout"]');
     this.sidebarMenu = page.locator('.sidebar, .side-menu, nav');
     
-    // Dashboard specific locators
     this.organizationActivityHeading = page.getByRole('heading', { name: 'Organization Activity' });
     this.slideOverviewHeading = page.getByRole('heading', { name: 'Slide Overview' });
     this.stainUsageOverviewHeading = page.getByRole('heading', { name: 'Stain Usage Overview' });
@@ -48,16 +45,12 @@ export class DashboardPage extends BasePage {
     this.progressBar = page.locator('[role="progressbar"]');
   }
 
-  /**
-   * Verify dashboard is loaded
-   */
+  // Verify dashboard is fully loaded by checking URL and visible elements
   async isDashboardLoaded(): Promise<boolean> {
     this.logger.action('Verify dashboard is loaded');
     try {
-      // Wait for page to be fully loaded
       await this.page.waitForLoadState('networkidle', { timeout: 15000 });
       
-      // Check if we're on the dashboard URL (not redirected to login)
       const currentUrl = this.page.url();
       const isOnDashboard = !currentUrl.includes('login') && !currentUrl.includes('auth');
       
@@ -65,11 +58,11 @@ export class DashboardPage extends BasePage {
         return false;
       }
       
-      // Try multiple possible dashboard indicators
+      // Check multiple indicators to confirm dashboard load
       const dashboardIndicators = [
         this.page.locator('main, .main-content, [role="main"]'),
         this.sidebarMenu,
-        this.page.locator('body'),  // At minimum, body should be visible
+        this.page.locator('body'),
       ];
       
       for (const indicator of dashboardIndicators) {
@@ -88,24 +81,16 @@ export class DashboardPage extends BasePage {
     }
   }
 
-  /**
-   * Get page title
-   */
   async getPageTitle(): Promise<string> {
     this.logger.action('Get page title');
     return await this.getText(this.pageTitle, 'Page Title');
   }
 
-  /**
-   * Click user profile menu
-   */
   async clickUserProfileMenu(): Promise<void> {
     this.logger.action('Click user profile menu');
     
-    // Wait for page to be ready
-    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
+    await this.page.waitForLoadState('networkidle');
     
-    // Try multiple possible user menu selectors
     const userMenuSelectors = [
       '.user-profile',
       '.profile-menu',
@@ -137,25 +122,17 @@ export class DashboardPage extends BasePage {
     throw new Error('Could not find user profile menu with any known selector');
   }
 
-  /**
-   * Logout
-   */
   async logout(): Promise<void> {
     this.logger.step('Logout from application');
     await this.clickUserProfileMenu();
     await this.click(this.logoutButton, 'Logout Button');
   }
 
-  /**
-   * Navigate to menu item
-   */
   async navigateToMenuItem(menuItemText: string): Promise<void> {
     this.logger.action(`Navigate to menu item: ${menuItemText}`);
     
-    // Wait for page to be ready
     await this.page.waitForLoadState('networkidle', { timeout: 10000 });
     
-    // Try multiple ways to find the menu item
     const menuItemSelectors = [
       `a:has-text("${menuItemText}")`,
       `button:has-text("${menuItemText}")`,
@@ -184,86 +161,50 @@ export class DashboardPage extends BasePage {
     throw new Error(`Could not find menu item "${menuItemText}" with any known selector`);
   }
 
-  /**
-   * Get heading element
-   */
   getHeading(headingName: string): Locator {
     return this.page.getByRole('heading', { name: headingName });
   }
 
-  /**
-   * Get card element
-   */
   getCard(cardName: string): Locator {
     return this.page.getByRole('heading', { name: cardName });
   }
 
-  /**
-   * Get icon element
-   */
   getIcon(iconType: string): Locator {
     return this.page.locator(`img[alt="${iconType}"], img`).first();
   }
 
-  /**
-   * Get metric element
-   */
   getMetric(metricName: string): Locator {
     return this.page.locator(`text=${metricName}`);
   }
 
-  /**
-   * Get metric count elements
-   */
   getMetricCounts(): Locator {
     return this.page.getByRole('heading', { level: 6 }).filter({ hasText: /^\d+$/ });
   }
 
-  /**
-   * Get quality label
-   */
   getQualityLabel(labelName: string): Locator {
     return this.page.locator(`//*[text()="${labelName}"]`);
   }
 
-  /**
-   * Get progress bar
-   */
   getProgressBar(): Locator {
     return this.progressBar;
   }
 
-  /**
-   * Get stain type element
-   */
   getStainType(stainType: string): Locator {
     return this.page.locator(`text=${stainType}`);
   }
 
-  /**
-   * Get button by name
-   */
   getButton(buttonName: string): Locator {
     return this.page.getByRole('button', { name: buttonName });
   }
 
-  /**
-   * Get tab element
-   */
   getTab(tabName: string): Locator {
     return this.page.getByRole('tab', { name: tabName });
   }
 
-  /**
-   * Get search box
-   */
   getSearchBox(placeholder: string): Locator {
     return this.page.getByPlaceholder(placeholder);
   }
 
-  /**
-   * Get table column
-   */
   getTableColumn(columnName: string): Locator {
     if (columnName === 'Checkbox') {
       return this.page.locator('input[type="checkbox"]');
@@ -271,72 +212,42 @@ export class DashboardPage extends BasePage {
     return this.page.locator(`text=${columnName}`);
   }
 
-  /**
-   * Get sortable column button
-   */
   getSortableColumn(columnName: string): Locator {
     return this.page.getByRole('button', { name: columnName });
   }
 
-  /**
-   * Get filter menu
-   */
   getFilterMenu(): Locator {
     return this.filterMenu;
   }
 
-  /**
-   * Get filter option
-   */
   getFilterOption(optionName: string): Locator {
     return this.page.locator(`//ul[@role="menu"]//*[text()="${optionName}"]`);
   }
 
-  /**
-   * Get quarter dropdown
-   */
   getQuarterDropdown(): Locator {
     return this.quarterDropdown;
   }
 
-  /**
-   * Get month label
-   */
   getMonthLabel(month: string): Locator {
     return this.page.locator(`text=${month}`);
   }
 
-  /**
-   * Get description element
-   */
   getDescription(description: string): Locator {
     return this.page.locator(`text=${description}`);
   }
 
-  /**
-   * Get status element
-   */
   getStatus(statusName: string): Locator {
     return this.page.locator(`text=${statusName}`);
   }
 
-  /**
-   * Get chart area
-   */
   getChartArea(): Locator {
     return this.chartArea;
   }
 
-  /**
-   * Get count elements
-   */
   getCounts(): Locator {
     return this.page.getByRole('heading', { level: 5 });
   }
 
-  /**
-   * Get icon elements
-   */
   getIcons(): Locator {
     return this.page.locator('img');
   }

@@ -7,17 +7,15 @@ import { HeaderComponent } from '../components/header.components';
 import { SidebarComponent } from '../components/sidebar.components';
 import { CustomWorld } from '../support/world';
 
+// Common reusable step definitions across features
 let loginPage: LoginPage;
 let headerComponent: HeaderComponent;
 let sidebarComponent: SidebarComponent;
 
-// Common login steps
-// Note: For non-login features, login is now performed once in the Before hook
-// This step just verifies the user is logged in
+// Verify user is logged in or perform login if needed
 Given('the user is logged in to the application', async function(this: CustomWorld) {
   this.logger.info('Verifying user is logged in');
   
-  // Check if already logged in by verifying header and sidebar are visible
   headerComponent = new HeaderComponent(this.page);
   sidebarComponent = new SidebarComponent(this.page);
   
@@ -29,7 +27,6 @@ Given('the user is logged in to the application', async function(this: CustomWor
     return;
   }
   
-  // If not logged in (should not happen for non-login features), perform login
   this.logger.info('User not logged in, performing login now');
   const baseUrl = environment.get('baseUrl');
   
@@ -62,13 +59,11 @@ Given('the user is logged in to the application', async function(this: CustomWor
   expect(isSidebarVisibleAfterLogin).toBeTruthy();
 });
 
-// Common URL verification
 Then('the URL should contain {string}', async function(this: CustomWorld, urlPart: string) {
   const currentUrl = this.page.url();
   expect(currentUrl).toContain(urlPart);
 });
 
-// Common tab operations
 Given('the user is on the {string} tab', async function(this: CustomWorld, tabName: string) {
   const tab = this.page.getByRole('tab', { name: tabName });
   const isSelected = await tab.getAttribute('aria-selected');
@@ -89,7 +84,6 @@ Then('the {string} tab should be selected', async function(this: CustomWorld, ta
   await expect(tab).toHaveAttribute('aria-selected', 'true');
 });
 
-// Common heading verification
 Then('the page should display the heading {string}', async function(this: CustomWorld, heading: string) {
   const headingElement = this.page.getByRole('heading', { name: heading });
   await expect(headingElement).toBeVisible({ timeout: 10000 });
@@ -105,38 +99,32 @@ Then('the page should display the description {string}', async function(this: Cu
   await expect(descriptionElement).toBeVisible();
 });
 
-// Common navigation button verification
 Then('the {string} navigation button should be active', async function(this: CustomWorld, buttonName: string) {
   const isNavigationButtonActive = await sidebarComponent.isMenuItemActive(buttonName);
   expect(isNavigationButtonActive).toBeTruthy();
 });
 
-// Common navigation button icon verification
 Then('the {string} navigation icon should be displayed', async function(this: CustomWorld, buttonName: string) {
   const isNavigationButtonIconVisible = await sidebarComponent.isMenuItemIconVisible(buttonName);
   expect(isNavigationButtonIconVisible).toBeTruthy();
 });
 
-// Common button click
 When('the user clicks on the {string} button', async function(this: CustomWorld, buttonName: string) {
   const button = this.page.getByRole('button', { name: buttonName });
   await button.click();
   await this.page.waitForTimeout(1000);
 });
 
-// Common button visibility
 Then('the {string} button should be displayed', async function(this: CustomWorld, buttonName: string) {
   const button = this.page.getByRole('button', { name: buttonName });
   await expect(button).toBeVisible();
 });
 
-// Common text verification
 Then('the page should display {string}', async function(this: CustomWorld, text: string) {
   const textElement = this.page.locator(`text=${text}`);
   await expect(textElement.first()).toBeVisible();
 });
 
-// Common element display verification
 Then('the {string} should be displayed', async function(this: CustomWorld, elementName: string) {
   const element = this.page.locator(`text=${elementName}`);
   await expect(element.first()).toBeVisible();
@@ -147,7 +135,6 @@ Then('the search box should have placeholder {string}', async function(this: Cus
   await expect(searchBox).toBeVisible();
 });
 
-// Common tab display verification
 Then('the following tabs should be displayed:', async function(this: CustomWorld, dataTable) {
   const tabs = dataTable.hashes();
   
@@ -158,20 +145,13 @@ Then('the following tabs should be displayed:', async function(this: CustomWorld
   }
 });
 
-
-
-
-
-// Common section display verification
 Then('the {string} section should be displayed', async function(this: CustomWorld, sectionName: string) {
   const section = this.page.getByRole('heading', { name: sectionName, level: 6 });
   await expect(section.first()).toBeVisible();
 });
 
-// Common element click
 When('the user clicks on {string}', async function(this: CustomWorld, elementName: string) {
   
-  // Try different element types
   let element = this.page.getByRole('button', { name: elementName });
   let isVisible = await element.isVisible().catch(() => false);
   

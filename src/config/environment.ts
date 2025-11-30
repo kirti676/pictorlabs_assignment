@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load environment variables
 dotenv.config();
 
+// Environment configuration interface
 export interface EnvironmentConfig {
   env: string;
   baseUrl: string;
@@ -19,9 +19,11 @@ export interface EnvironmentConfig {
   videoOnFailure: boolean;
 }
 
+// Centralized environment configuration manager
 class Environment {
   private config: EnvironmentConfig;
 
+  // Load configuration from environment variables with defaults
   constructor() {
     this.config = {
       env: process.env.ENV || 'dev',

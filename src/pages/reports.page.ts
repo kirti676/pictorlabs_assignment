@@ -1,8 +1,8 @@
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './base.page';
 
+// Reports page for viewing user activity and stain usage
 export class ReportsPage extends BasePage {
-  // Static locators initialized in constructor
   private readonly yearDropdown: Locator;
   private readonly searchBox: Locator;
   private readonly viewUserButton: Locator;
@@ -28,108 +28,63 @@ export class ReportsPage extends BasePage {
     this.currentPageButton = page.locator('button:has-text("1")');
   }
 
-  /**
-   * Verify search box is displayed
-   */
   async verifySearchBoxDisplayed(): Promise<void> {
     await expect(this.searchBox).toBeVisible();
   }
 
-  /**
-   * Verify user list is displayed
-   */
   async verifyUserListDisplayed(): Promise<void> {
     await expect(this.userEntries.first()).toBeVisible();
   }
 
-  /**
-   * Click view user button
-   */
   async clickViewUserButton(): Promise<void> {
     await this.viewUserButton.click();
     await this.page.waitForTimeout(1000);
   }
 
-  /**
-   * Verify user details expanded
-   */
   async verifyUserDetailsExpanded(): Promise<void> {
     await expect(this.quarterSelector).toBeVisible();
   }
 
-  /**
-   * Get year dropdown
-   */
   getYearDropdown(): Locator {
     return this.yearDropdown;
   }
 
-  /**
-   * Get stain type heading
-   */
   getStainTypeHeading(stainType: string): Locator {
     return this.page.getByRole('heading', { name: stainType, level: 3 });
   }
 
-  /**
-   * Get expand buttons
-   */
   getExpandButtons(): Locator {
     return this.expandButtons;
   }
 
-  /**
-   * Get icons
-   */
   getIcons(): Locator {
     return this.icons;
   }
 
-  /**
-   * Get label elements
-   */
   getLabels(label: string): Locator {
     return this.page.locator(`text=${label}`);
   }
 
-  /**
-   * Get first user
-   */
   getFirstUser(): Locator {
     return this.firstUser;
   }
 
-  /**
-   * Get quarter selector
-   */
   getQuarterSelector(): Locator {
     return this.quarterSelector;
   }
 
-  /**
-   * Get chart section heading
-   */
   getChartSectionHeading(chartName: string): Locator {
     return this.page.getByRole('heading', { name: chartName, level: 6 });
   }
 
-  /**
-   * Get metric heading
-   */
   getMetricHeading(metricName: string): Locator {
     return this.page.getByRole('heading', { name: metricName, level: 6 });
   }
 
-  /**
-   * Get pagination controls
-   */
   getPaginationControls(): Locator {
     return this.paginationControls;
   }
 
-  /**
-   * Get current page button
-   */
   getCurrentPageButton(): Locator {
     return this.currentPageButton;
   }

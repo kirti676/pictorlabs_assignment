@@ -1,6 +1,7 @@
 ﻿import { Page, Locator } from '@playwright/test';
 import { Logger } from '../utils/logger';
 
+// Base page with common interactions and wait utilities
 export class BasePage {
   protected page: Page;
   protected logger: Logger;

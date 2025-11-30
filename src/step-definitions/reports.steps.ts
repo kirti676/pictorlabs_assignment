@@ -4,10 +4,10 @@ import { CustomWorld } from '../support/world';
 import { ReportsPage } from '../pages/reports.page';
 import { SidebarComponent } from '../components/sidebar.components';
 
+// Step definitions for reports page and user activity
 let reportsPage: ReportsPage;
 let sidebarComponent: SidebarComponent;
 
-// Navigation steps
 When('the user clicks on the Reports navigation button', async function(this: CustomWorld) {
   reportsPage = new ReportsPage(this.page);
   sidebarComponent = new SidebarComponent(this.page);
@@ -16,7 +16,6 @@ When('the user clicks on the Reports navigation button', async function(this: Cu
   await sidebarComponent.waitForMenuItemActive('Reports');
 });
 
-// Dropdown verification
 Then('the Year dropdown should be displayed', async function(this: CustomWorld) {
   const dropdown = reportsPage.getYearDropdown();
   await expect(dropdown).toBeVisible();
@@ -30,7 +29,6 @@ Then('the Year dropdown should show the current year', async function(this: Cust
   expect(text).toContain(currentYear);
 });
 
-// Stain type sections
 Then('the following stain type sections should be displayed:', async function(this: CustomWorld, dataTable) {
   const stainTypes = dataTable.hashes();
   
@@ -48,7 +46,6 @@ Then('each stain type should have an expandable section', async function(this: C
 });
 
 Then('each stain type should display a collapse\\/expand icon', async function(this: CustomWorld) {
-  // Check for icon images near stain type headings
   const icons = reportsPage.getIcons();
   const count = await icons.count();
   expect(count).toBeGreaterThan(0);
@@ -60,12 +57,10 @@ Then('each stain type should show {string} label', async function(this: CustomWo
   expect(count).toBeGreaterThan(0);
 });
 
-// Search functionality
 Then('the search box should be displayed', async function(this: CustomWorld) {
   await reportsPage.verifySearchBoxDisplayed();
 });
 
-// User list verification
 Then('a list of users should be displayed', async function(this: CustomWorld) {
   await reportsPage.verifyUserListDisplayed();
 });
@@ -73,7 +68,6 @@ Then('a list of users should be displayed', async function(this: CustomWorld) {
 Then('each user entry should display:', async function(this: CustomWorld, dataTable) {
   const fields = dataTable.hashes();
   
-  // Verify first user has all fields
   const firstUser = reportsPage.getFirstUser();
   await expect(firstUser).toBeVisible();
 });
@@ -82,7 +76,6 @@ When('the user clicks on {string} for the first user', async function(this: Cust
   await reportsPage.clickViewUserButton();
 });
 
-// User details verification
 Then('the user details section should expand', async function(this: CustomWorld) {
   await reportsPage.verifyUserDetailsExpanded();
 });
@@ -97,7 +90,6 @@ Then('the {string} chart section should be displayed', async function(this: Cust
   await expect(chartHeading).toBeVisible();
 });
 
-// Activity Summary verification
 Then('the Activity Summary should display:', async function(this: CustomWorld, dataTable) {
   const metrics = dataTable.hashes();
   
@@ -108,7 +100,6 @@ Then('the Activity Summary should display:', async function(this: CustomWorld, d
   }
 });
 
-// Pagination
 Then('the pagination controls should be displayed', async function(this: CustomWorld) {
   const pagination = reportsPage.getPaginationControls();
   await expect(pagination.first()).toBeVisible();

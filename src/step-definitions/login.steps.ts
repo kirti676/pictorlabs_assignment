@@ -6,10 +6,10 @@ import { DataHelper } from '../utils/data.helper';
 import { environment } from '../config/environment';
 import { HeaderComponent } from '../components/header.components';
 
+// Step definitions for login functionality
 let loginPage: LoginPage;
 let headerComponent: HeaderComponent;
 
-// Given Steps
 Given('I am on the login page', async function (this: CustomWorld) {
   this.logger.step('Navigate to login page');
   loginPage = new LoginPage(this.page);
@@ -18,7 +18,6 @@ Given('I am on the login page', async function (this: CustomWorld) {
   await loginPage.navigateToLoginPage(baseUrl);
 });
 
-// When Steps
 When('I enter valid credentials', async function (this: CustomWorld) {
   this.logger.step('Enter valid credentials');
   const credentials = DataHelper.getLoginCredentials('validUser');
@@ -52,7 +51,6 @@ When('I click the login button', async function (this: CustomWorld) {
   await loginPage.clickLoginButton();
 });
 
-// Then Steps
 Then('I should be redirected to the dashboard', async function (this: CustomWorld) {
   this.logger.step('Verify redirect to dashboard');
   await loginPage.waitForSuccessfulLogin();
@@ -60,7 +58,6 @@ Then('I should be redirected to the dashboard', async function (this: CustomWorl
   const currentUrl = await loginPage.getCurrentUrl();
   this.logger.assertion(`Home (Dashboard) Page URL: ${currentUrl}`, !currentUrl.includes('login'));
   
-  // The URL should not contain 'login' after successful login
   expect(currentUrl).not.toContain('login');
 });
 
@@ -91,11 +88,9 @@ Then('I should see an error message', async function (this: CustomWorld) {
 Then('I should see an error message {string}', async function (this: CustomWorld, expectedError: string) {
   this.logger.step('Verify error message is displayed');
   
-  // Get all visible error messages
   const allErrors = await loginPage.getAllErrorMessages();
   this.logger.info(`Error messages found: ${allErrors}`);
   
-  // Verify the expected error message matches
   this.logger.assertion(`Expected error: "${expectedError}"`, allErrors === expectedError);
   expect(allErrors).toBe(expectedError);
 });

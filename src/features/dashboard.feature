@@ -7,7 +7,7 @@ Feature: Dashboard Page UI Validation
   Background:
     Given the user is logged in to the application
 
-  @smoke @ui-validation
+  @smoke @regression @ui
   Scenario: Validate Dashboard page is loaded
     Given the user is on the Dashboard page
     Then the URL should be baseUrl
@@ -15,7 +15,7 @@ Feature: Dashboard Page UI Validation
     And the "Dashboard" navigation button should be active
     And the "Dashboard" navigation icon should be displayed
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Slide Overview card under Organization Activity
     Given the user is on the Dashboard page
     Then the "Organization Activity" heading should be displayed
@@ -31,7 +31,7 @@ Feature: Dashboard Page UI Validation
     And the quality metric should show Pass Fail labels
     And a quality progress bar should be displayed
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Stain Usage Overview card under Organization Activity
     Given the user is on the Dashboard page
     Then the "Organization Activity" heading should be displayed
@@ -52,7 +52,7 @@ Feature: Dashboard Page UI Validation
     And a quarter selector dropdown should be displayed
     And a chart area should be displayed
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Organization Overview section
     Given the user is on the Dashboard page
     Then the "Organization Overview" heading should be displayed
@@ -63,7 +63,7 @@ Feature: Dashboard Page UI Validation
       | Projects  |
     And the "Slides" tab should be selected by default
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Slides tab fields and controls
     Given the user is on the Dashboard page
     And the user is on the "Slides" tab
@@ -91,7 +91,7 @@ Feature: Dashboard Page UI Validation
       | Image Type  |
       | Date        |
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Add Filters menu options
     Given the user is on the Dashboard page
     And the user is on the "Slides" tab
@@ -104,7 +104,7 @@ Feature: Dashboard Page UI Validation
       | Image Type    |
       | Stains        |
 
-  @ui-validation
+  @regression @ui
   Scenario: Navigate to Projects tab
     Given the user is on the Dashboard page
     When the user clicks on the "Projects" tab

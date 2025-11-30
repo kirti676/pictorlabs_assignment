@@ -8,7 +8,7 @@ Feature: Model Page UI Validation
     Given the user is logged in to the application
     And the user is on the Dashboard page
 
-  @smoke @ui-validation
+  @smoke @regression @ui
   Scenario: Validate Model page navigation
     When the user clicks on the Model navigation button
     Then the URL should contain "/models"
@@ -17,7 +17,7 @@ Feature: Model Page UI Validation
     And the page should display the heading "Organization Models"
     And the page should display the description "Organization Stain Management"
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate total stainers available metric
     When the user clicks on the Model navigation button
     Then the "Stain Management" tab should be displayed
@@ -25,7 +25,7 @@ Feature: Model Page UI Validation
     And the "Total Stainers Available" metric should be displayed
     And the total stainers count should be displayed
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Auto Deep Stainer section
     When the user clicks on the Model navigation button
     Then the "Model" navigation button should be active
@@ -38,7 +38,7 @@ Feature: Model Page UI Validation
     And each stain should have an associated toggle switch
     And the "H&E v0.1.0" toggle switch should be checked
 
-  @ui-validation
+  @regression @ui
   Scenario: Validate Auto Restainer section
     When the user clicks on the Model navigation button
     Then the "Model" navigation button should be active

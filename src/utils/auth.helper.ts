@@ -5,23 +5,19 @@ import fs from 'fs';
 
 const logger = new Logger('AuthHelper');
 
+// Manages authentication state persistence for session reuse
 export class AuthHelper {
   private static readonly AUTH_DIR = path.join(process.cwd(), '.auth');
   private static readonly AUTH_FILE = path.join(AuthHelper.AUTH_DIR, 'user.json');
 
-  /**
-   * Save authentication state to file
-   * @param context - Browser context with authentication
-   */
+  // Save browser context state including cookies and local storage
   static async saveAuthState(context: BrowserContext): Promise<void> {
     try {
-      // Create .auth directory if it doesn't exist
       if (!fs.existsSync(this.AUTH_DIR)) {
         fs.mkdirSync(this.AUTH_DIR, { recursive: true });
         logger.info(`Created auth directory: ${this.AUTH_DIR}`);
       }
 
-      // Save the storage state (cookies, localStorage, etc.)
       await context.storageState({ path: this.AUTH_FILE });
       logger.info(`Authentication state saved to: ${this.AUTH_FILE}`);
     } catch (error) {
@@ -30,10 +26,6 @@ export class AuthHelper {
     }
   }
 
-  /**
-   * Load authentication state from file
-   * @returns Storage state object or undefined if file doesn't exist
-   */
   static loadAuthState(): any | undefined {
     try {
       if (fs.existsSync(this.AUTH_FILE)) {
@@ -50,19 +42,12 @@ export class AuthHelper {
     }
   }
 
-  /**
-   * Check if auth state file exists
-   * @returns true if auth state exists
-   */
   static hasAuthState(): boolean {
     const exists = fs.existsSync(this.AUTH_FILE);
     logger.info(`Auth state exists: ${exists}`);
     return exists;
   }
 
-  /**
-   * Delete saved authentication state
-   */
   static deleteAuthState(): void {
     try {
       if (fs.existsSync(this.AUTH_FILE)) {
@@ -70,7 +55,6 @@ export class AuthHelper {
         logger.info(`Deleted auth state file: ${this.AUTH_FILE}`);
       }
       
-      // Remove directory if empty
       if (fs.existsSync(this.AUTH_DIR) && fs.readdirSync(this.AUTH_DIR).length === 0) {
         fs.rmdirSync(this.AUTH_DIR);
         logger.info(`Removed empty auth directory: ${this.AUTH_DIR}`);
@@ -80,18 +64,10 @@ export class AuthHelper {
     }
   }
 
-  /**
-   * Get auth file path
-   * @returns Path to auth state file
-   */
   static getAuthFilePath(): string {
     return this.AUTH_FILE;
   }
 
-  /**
-   * Get auth directory path
-   * @returns Path to auth directory
-   */
   static getAuthDirPath(): string {
     return this.AUTH_DIR;
   }
