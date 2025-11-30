@@ -35,6 +35,15 @@ export class HeaderComponent {
     await profileButton.click();
   }
 
+  async logout(): Promise<void> {
+    this.logger.action('Click logout from user profile menu');
+    await this.clickUserProfileMenu();
+    // Wait for the menu to appear and click logout option
+    const logoutOption = this.page.getByText('Log out');
+    await logoutOption.click();
+    await this.page.waitForLoadState('networkidle');
+  }
+
   async getOrganizationName(): Promise<string> {
     this.logger.action('Get organization name');
     const orgName = this.page.locator('header .flex.items-center.capitalize span');

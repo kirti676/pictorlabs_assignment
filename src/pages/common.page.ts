@@ -57,19 +57,20 @@ export class CommonPage extends BasePage {
   async clickTab(tabName: string): Promise<void> {
     const tab = this.getTab(tabName);
     await this.click(tab, `Tab: ${tabName}`);
-    await this.page.waitForTimeout(1000);
+    await tab.waitFor({ state: 'attached' });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async clickButton(buttonName: string): Promise<void> {
     const button = this.getButton(buttonName);
     await this.click(button, `Button: ${buttonName}`);
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async clickElement(elementName: string): Promise<void> {
     const element = await this.getElement(elementName);
     await element.click();
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async navigateToTab(tabName: string): Promise<void> {

@@ -182,7 +182,7 @@ Then('the following columns should have sort icons:', async function(this: Custo
 When('the user clicks on {string} button', async function(this: CustomWorld, elementName: string) {
   const element = dashboardPage.getButton(elementName);
   await element.click();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForLoadState('networkidle');
 });
 
 Then('a filter menu should be displayed', async function(this: CustomWorld) {

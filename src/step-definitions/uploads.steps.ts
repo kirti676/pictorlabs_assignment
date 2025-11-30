@@ -67,9 +67,7 @@ Then('the description should state {string}', async function(this: CustomWorld, 
 
 When('the user switches between tabs', async function(this: CustomWorld) {
   await uploadsPage.clickInProgressTab();
-  await this.page.waitForTimeout(500);
   await uploadsPage.clickCompletedTab();
-  await this.page.waitForTimeout(500);
   await uploadsPage.clickUploadTab();
 });
 

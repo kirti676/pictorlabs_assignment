@@ -38,7 +38,7 @@ export class ReportsPage extends BasePage {
 
   async clickViewUserButton(): Promise<void> {
     await this.viewUserButton.click();
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async verifyUserDetailsExpanded(): Promise<void> {

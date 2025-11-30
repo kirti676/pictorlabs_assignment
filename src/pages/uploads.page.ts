@@ -24,17 +24,20 @@ export class UploadsPage extends BasePage {
 
   async clickInProgressTab(): Promise<void> {
     await this.inProgressTab.click();
-    await this.page.waitForTimeout(1000);
+    await this.inProgressTab.waitFor({ state: 'attached' });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async clickCompletedTab(): Promise<void> {
     await this.completedTab.click();
-    await this.page.waitForTimeout(1000);
+    await this.completedTab.waitFor({ state: 'attached' });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async clickUploadTab(): Promise<void> {
     await this.uploadTab.click();
-    await this.page.waitForTimeout(1000);
+    await this.uploadTab.waitFor({ state: 'attached' });
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async verifyUploadGuidelinesDisplayed(): Promise<void> {
