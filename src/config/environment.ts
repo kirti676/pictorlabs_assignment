@@ -31,7 +31,7 @@ class Environment {
       username: process.env.TEST_USERNAME || process.env.APP_USERNAME || 'pictor.newqa.guest@pictorlabs.ai',
       password: process.env.TEST_PASSWORD || process.env.APP_PASSWORD || 'MUT!RHrc6a!@4Fp',
       browser: (process.env.BROWSER as 'chromium' | 'firefox' | 'webkit') || 'chromium',
-      headless: process.env.HEADLESS === 'true',
+      headless: process.env.HEADLESS !== 'false',
       slowMo: parseInt(process.env.SLOW_MO || '0'),
       timeout: parseInt(process.env.TIMEOUT || '30000'),
       parallelWorkers: parseInt(process.env.PARALLEL_WORKERS || '3'),
