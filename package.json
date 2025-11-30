@@ -8,8 +8,8 @@
     "test:parallel": "cucumber-js --parallel 3",
     "test:chrome": "cucumber-js --profile chrome",
     "test:firefox": "cucumber-js --profile firefox",
-    "test:safari": "cucumber-js --profile safari",
-    "test:all-browsers": "npm run test:chrome && npm run test:firefox && npm run test:safari",
+    "test:edge": "cucumber-js --profile edge",
+    "test:all-browsers": "npm run test:chrome && npm run test:firefox && npm run test:edge",
     "clean": "rimraf reports test-results"
   },
   "keywords": [

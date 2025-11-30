@@ -99,6 +99,13 @@ export class UploadsPage extends BasePage {
   }
 
   /**
+   * Get icon in drag drop area
+   */
+  getDragDropIcon(): Locator {
+    return this.dragDropArea.locator('..').getByTestId('CloudUploadIcon');
+  }
+
+  /**
    * Get button element
    */
   getUploadButton(buttonName: string): Locator {

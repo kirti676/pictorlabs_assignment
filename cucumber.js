@@ -6,8 +6,7 @@ const common = {
     'html:reports/cucumber-report.html',
     'json:reports/cucumber-report.json'
   ],
-  paths: ['src/features/**/*.feature'],
-  parallel: 1
+  paths: ['src/features/**/*.feature']
 };
 
 const chrome = {
@@ -24,10 +23,10 @@ const firefox = {
   }
 };
 
-const safari = {
+const edge = {
   ...common,
   worldParameters: {
-    browser: 'webkit'
+    browser: 'msedge'
   }
 };
 
@@ -40,6 +39,6 @@ module.exports = {
   default: common,
   chrome,
   firefox,
-  safari,
+  edge,
   parallel
 };

@@ -45,6 +45,11 @@ Then('the area should display {string}', async function(this: CustomWorld, text:
   await expect(textElement).toBeVisible();
 });
 
+Then('an upload icon should be displayed in the drag and drop area', async function(this: CustomWorld) {
+  const icon = uploadsPage.getDragDropIcon();
+  await expect(icon).toBeVisible();
+});
+
 // File format and size verification
 Then('the supported formats should be displayed: {string}', async function(this: CustomWorld, formats: string) {
   await uploadsPage.verifySupportedFormats(formats);

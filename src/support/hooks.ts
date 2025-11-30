@@ -43,19 +43,31 @@ BeforeAll({ timeout: 60000 }, async function () {
  * Before Hook - Runs before each scenario
  * Creates a new page/context but reuses the browser instance
  * For non-login features, performs login once per feature file
+ * For login features, ensures fresh context (logged out state)
  */
 Before(async function (this: CustomWorld, { pickle, gherkinDocument }) {
   logger.info(`\n=== Starting Scenario: ${pickle.name} ===`);
   this.logger = new Logger(pickle.name);
   
+  // Check if this is a login feature
+  const featureTags = gherkinDocument.feature?.tags?.map(tag => tag.name) || [];
+  const isLoginFeature = featureTags.includes('@login');
+  
+  // For login features, force cleanup of existing context to get fresh logged-out state
+  if (isLoginFeature) {
+    try {
+      await BrowserManager.cleanupScenario();
+      this.logger.info('Login feature: Cleaned up previous context to ensure logged-out state');
+    } catch (error) {
+      // Ignore error if no existing context
+    }
+  }
+  
   // Initialize world with existing browser
   await this.init();
   this.logger.info('Scenario initialized');
   
-  // Check if this is NOT a login feature and login hasn't been performed yet for this feature
-  const featureTags = gherkinDocument.feature?.tags?.map(tag => tag.name) || [];
-  const isLoginFeature = featureTags.includes('@login');
-  
+  // For non-login features, perform one-time login if not already done
   if (!isLoginFeature && !isLoggedInForFeature) {
     this.logger.info('Performing one-time login for feature');
     
