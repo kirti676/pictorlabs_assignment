@@ -1,6 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { LoginPage } from '../pages/login.page';
+import { CommonPage } from '../pages/common.page';
 import { environment } from '../config/environment';
 import { DataHelper } from '../utils/data.helper';
 import { HeaderComponent } from '../components/header.components';
@@ -9,6 +10,7 @@ import { CustomWorld } from '../support/world';
 
 // Common reusable step definitions across features
 let loginPage: LoginPage;
+let commonPage: CommonPage;
 let headerComponent: HeaderComponent;
 let sidebarComponent: SidebarComponent;
 
@@ -16,6 +18,7 @@ let sidebarComponent: SidebarComponent;
 Given('the user is logged in to the application', async function(this: CustomWorld) {
   this.logger.info('Verifying user is logged in');
   
+  commonPage = new CommonPage(this.page);
   headerComponent = new HeaderComponent(this.page);
   sidebarComponent = new SidebarComponent(this.page);
   
@@ -65,37 +68,30 @@ Then('the URL should contain {string}', async function(this: CustomWorld, urlPar
 });
 
 Given('the user is on the {string} tab', async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole('tab', { name: tabName });
-  const isSelected = await tab.getAttribute('aria-selected');
-  
-  if (isSelected !== 'true') {
-    await tab.click();
-    await this.page.waitForTimeout(1000);
-  }
+  await commonPage.navigateToTab(tabName);
 });
 
 When('the user clicks on the {string} tab', async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole('tab', { name: tabName });
-  await tab.click();
+  await commonPage.clickTab(tabName);
 });
 
 Then('the {string} tab should be selected', async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole('tab', { name: tabName });
+  const tab = commonPage.getTab(tabName);
   await expect(tab).toHaveAttribute('aria-selected', 'true');
 });
 
 Then('the page should display the heading {string}', async function(this: CustomWorld, heading: string) {
-  const headingElement = this.page.getByRole('heading', { name: heading });
+  const headingElement = commonPage.getHeading(heading);
   await expect(headingElement).toBeVisible({ timeout: 10000 });
 });
 
 Then('the {string} heading should be displayed', async function(this: CustomWorld, heading: string) {
-  const headingElement = this.page.getByRole('heading', { name: heading });
+  const headingElement = commonPage.getHeading(heading);
   await expect(headingElement).toBeVisible();
 });
 
 Then('the page should display the description {string}', async function(this: CustomWorld, description: string) {
-  const descriptionElement = this.page.locator(`text=${description}`);
+  const descriptionElement = commonPage.getTextElement(description);
   await expect(descriptionElement).toBeVisible();
 });
 
@@ -110,28 +106,26 @@ Then('the {string} navigation icon should be displayed', async function(this: Cu
 });
 
 When('the user clicks on the {string} button', async function(this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: buttonName });
-  await button.click();
-  await this.page.waitForTimeout(1000);
+  await commonPage.clickButton(buttonName);
 });
 
 Then('the {string} button should be displayed', async function(this: CustomWorld, buttonName: string) {
-  const button = this.page.getByRole('button', { name: buttonName });
+  const button = commonPage.getButton(buttonName);
   await expect(button).toBeVisible();
 });
 
 Then('the page should display {string}', async function(this: CustomWorld, text: string) {
-  const textElement = this.page.locator(`text=${text}`);
+  const textElement = commonPage.getTextElement(text);
   await expect(textElement.first()).toBeVisible();
 });
 
 Then('the {string} should be displayed', async function(this: CustomWorld, elementName: string) {
-  const element = this.page.locator(`text=${elementName}`);
+  const element = commonPage.getTextElement(elementName);
   await expect(element.first()).toBeVisible();
 });
 
 Then('the search box should have placeholder {string}', async function(this: CustomWorld, placeholder: string) {
-  const searchBox = this.page.getByPlaceholder(placeholder);
+  const searchBox = commonPage.getSearchBoxByPlaceholder(placeholder);
   await expect(searchBox).toBeVisible();
 });
 
@@ -140,36 +134,22 @@ Then('the following tabs should be displayed:', async function(this: CustomWorld
   
   for (const tab of tabs) {
     const tabName = tab['Tab Name'];
-    const tabElement = this.page.getByRole('tab', { name: tabName });
+    const tabElement = commonPage.getTab(tabName);
     await expect(tabElement).toBeVisible();
   }
 });
 
 Then('the {string} section should be displayed', async function(this: CustomWorld, sectionName: string) {
-  const section = this.page.getByRole('heading', { name: sectionName, level: 6 });
+  const section = commonPage.getSectionHeading(sectionName);
   await expect(section.first()).toBeVisible();
 });
 
 When('the user clicks on {string}', async function(this: CustomWorld, elementName: string) {
-  
-  let element = this.page.getByRole('button', { name: elementName });
-  let isVisible = await element.isVisible().catch(() => false);
-  
-  if (!isVisible) {
-    element = this.page.getByRole('tab', { name: elementName });
-    isVisible = await element.isVisible().catch(() => false);
-  }
-  
-  if (!isVisible) {
-    element = this.page.locator(`text=${elementName}`).first();
-  }
-  
-  await element.click();
-  await this.page.waitForTimeout(1000);
+  await commonPage.clickElement(elementName);
 });
 
 Then('the {string} tab should be selected by default', async function(this: CustomWorld, tabName: string) {
-  const tab = this.page.getByRole('tab', { name: tabName });
+  const tab = commonPage.getTab(tabName);
   await expect(tab).toHaveAttribute('aria-selected', 'true');
 });
 
