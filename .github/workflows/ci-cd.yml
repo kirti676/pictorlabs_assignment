@@ -121,7 +121,7 @@ jobs:
           if-no-files-found: warn
 
   test-edge:
-    name: Test on Edge
+    name: Test on Edge (WebKit)
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
     
@@ -139,7 +139,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install msedge --with-deps
+        run: npx playwright install webkit --with-deps
 
       - name: Clean previous reports
         run: npm run clean
